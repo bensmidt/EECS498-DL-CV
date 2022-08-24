@@ -12,7 +12,7 @@ Last thing, big thank you to Michigan for making these lectures and course mater
 
 ## Lecture Notes
 
-My personal notes of the lecture videos are too large to store on GitHub so you can find them [here] (https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/) on my Google Drive (Note that this file is likely too large to view in Google Drive so you'll have to use a third party service such as Lumin or download it to your computer).
+My personal notes of the lecture videos are too large to store on GitHub so you can find them [here](https://drive.google.com/file/d/1PTapj-pDfWFhKiEDO6lOJrw5I9A-wkWC/view?usp=sharing) on my Google Drive (Note that this file is likely too large to view in Google Drive so you'll have to use a third party service such as Lumin or download it to your computer).
 
 ## Assignments
 Assignment instructions are embedded in the provided notebook for each assignment. So, to be clear, assignment instructions and solutions are in the same notebook (in this repo). There are a total of 6 assignments, each of which are a directory (1st Assignment = "A1", 2nd = "A2", etc.) in [Assignments](). 
