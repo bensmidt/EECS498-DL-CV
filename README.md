@@ -21,34 +21,14 @@ If you want to see the assignments without my code (eg. you want to do it yourse
 
 All coding assignments are programmed using Google Colab and PyTorch. 
 
-### Problem Set 1
+### Assignment 1
 
-[Math Solutions](https://drive.google.com/file/d/1_YopHEnhSM0Fnj19SnYsPiKxzlx-Q6ek/view?usp=sharing)
+### Assignment 2
 
-1. Linear Classifiers (Logistic Regression and Gaussian Discriminant Analysis)
-  IN PROGRESS
-    - Parts A, C, D: Math (pg. 1)
-    - Part B, C, D
+### Assignment 3
 
-2. Incomplete, Positive-Only Labels
-  IN PROGRESS
-    - Parts A, B: Math (pg. 1)
-    - Part C, D, E
+### Assignment 4
 
-3. Poisson Regression
-    - Parts A, B, C: Math (pg. 2)
-    - [Part D](https://github.com/bensmidt/CS229-ML-Autumn-2018/blob/main/Solutions/PS1/src/p03d_poisson.py)
+### Assignment 5
 
-4. Convexity of Generalized Linear Models
-    - Parts A, B, C: Math (pg. 2)
-
-5. Locally Weighted Linear Regression
-    - Part A: Math (pg. 3)
-    - [Part B](https://github.com/bensmidt/CS229-ML-Autumn-2018/blob/main/Solutions/PS1/src/p05b_lwr.py)
-    - [Part C](https://github.com/bensmidt/CS229-ML-Autumn-2018/blob/main/Solutions/PS1/src/p05c_tau.py)
-
-### Problem Set 2
-
-### Problem Set 3
-
-### Problem Set 4
+### Assignment 6
