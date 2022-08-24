@@ -13,7 +13,7 @@ Last thing, big thank you to Michigan for making these lectures and course mater
 My personal notes of the lecture videos are too large to store on GitHub so you can find them [here](https://drive.google.com/file/d/1HR9ji_F64mLXg3i-ZzgLo7budN3ESA65/view?usp=sharing) on my Google Drive (Note that this file is likely too large to view in Google Drive so you'll have to use a third party service such as Lumin or download it to your computer).
 
 ## Problem Sets
-The problem set assignments (instructions) can be found [here](https://github.com/bensmidt/CS229-ML-Autumn-2018/tree/main/Problem-Sets). All coding assignments are programmed using Google Colab in PyTorch. 
+The problem set assignments (instructions) and starter code can be found in [Problem-Sets](https://github.com/bensmidt/CS229-ML-Autumn-2018/tree/main/Problem-Sets). All coding assignments are programmed using Google Colab in PyTorch. 
 
 All of my solutions are located in Solutions. I've also linked them here for
 
