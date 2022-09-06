@@ -22,8 +22,8 @@ If you want to see the assignments without my code (eg. you want to do it yourse
 All coding assignments are programmed using Google Colab and PyTorch. 
 
 # Assignment 1
-  1. PyTorch 101: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb); [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
-  2. K-Nearest Neighbors: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb); [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
+  1. PyTorch 101: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
+  2. K-Nearest Neighbors: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
 
 # Assignment 2
 
