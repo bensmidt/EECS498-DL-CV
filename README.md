@@ -15,7 +15,7 @@ Last thing, big thank you to Michigan for making these lectures and course mater
 Course slides and lecture notes can be found [here](https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/schedule.html) by clicking on the top link (slides) or the bottom link (notes) for a given lecture. Note that lecture 1 does not have any lecture notes. 
 
 ## Assignments
-Assignment instructions are embedded in the provided notebook for each assignment. So, to be clear, assignment instructions and solutions are in the same notebook (in this repo). There are a total of 6 assignments, each of which are a directory (1st Assignment = "A1", 2nd = "A2", etc.). 
+Assignment instructions are embedded in the provided notebook for each assignment. Along with each notebook is a python script that does the heavy lifting for the notebook. So, to be clear, assignment instructions and solutions are in the same notebook (in this repo) which contains a python script as well (same name). There are a total of 6 assignments (with sub-assignments and subparts), each of which are a directory (1st Assignment = "A1", 2nd = "A2", etc.). 
 
 If you want to see the assignments without my code (eg. you want to do it yourself!), they can be found at the [course website](https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/)
 
