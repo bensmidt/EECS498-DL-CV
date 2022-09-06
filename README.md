@@ -21,9 +21,16 @@ If you want to see the assignments without my code (eg. you want to do it yourse
 
 All coding assignments are programmed using Google Colab and PyTorch. 
 
-1. [Assignment 1](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/tree/main/A1)
-2. [Assignment 2]()
-3. Assignment 3
-4. Assignment 4
-5. Assignment 5
-6. Assignment 6
+# Assignment 1
+  1. PyTorch 101: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb); [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
+  2. K-Nearest Neighbors: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb); [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
+
+# Assignment 2
+
+# Assignment 3
+
+# Assignment 4
+
+# Assignment 5
+
+# Assignment 6
