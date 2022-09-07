@@ -1,0 +1,67 @@
+\documentclass[12pt]{article}
+\usepackage{lingmacros}
+\usepackage{tree-dvips}
+\begin{document}
+\begin{center}
+\section*{Assignment 2}
+\end{center}
+
+\subsection*{Softmax Classifier}
+\subsubsection*{Loss}
+
+\paragraph{}
+The equation for the loss function of a single example of 
+Multinomial Logistic Regression is:  
+
+\begin{equation}
+    L_{i} = -log(\frac{e^{f_{y_{i}}}}{\sum_{j} e^{f_j}}) 
+    = -f_{y_{i}} + log(\sum_{j} e^{f_{j}})
+\end{equation}
+
+\begin{equation}
+    f_{y_{i}} = f(x_{i}; W) = Wx_{i}
+\end{equation}
+
+\noindent Thus, to find the loss for the training data, we simply need 
+to average the loss $L_{i}$ for each example. 
+
+\subsubsection{Naive Implementation}
+\paragraph{} 
+In our Naive Implementation of finding the loss, we first matrix 
+multiply $XW$ and raise every value in the resulting matrix to $e$
+giving us matrix $e^{f}$ which has shape NxC since $X$ and $W$ 
+have shapes NxD and DxC.
+(N = examples, D = feature dimensions, C = classes). We then use 
+nested for loops to sum $e^{f_{j}}$ in each class and divide the 
+$e^{f_{y_{i}}}$ by that sum. Note that $e^{f_{y_{i}}}$ is included in 
+$e^{f_{j}}$. Finally, we take the $-log()$ of that 
+result giving us our individual loss. We iteratively sum all those losses 
+and divide by N to find the average loss. 
+
+To check our implementation, we do a quick sanity check. 
+Since we initialized all our weights $w_{i}$ to be very close to 0, we
+expect $e^{f_{y_{i}}}$ to be one-tenth of $\sum_{j} e^{f_{j}}$ since 
+$e^{0} = 1$. Since $-log(1/10) = log(10)$, $log(10)$ is approximately our 
+expected loss value. 
+
+\subsubsection{Gradient}
+\paragraph{}
+To find the gradient with respect to our weight 
+matrix W, let's again focus on one example. We can rewrite our loss function as:
+
+\begin{equation}
+    L_{i} = -log(\frac{e^{W_{y_{i}}x_{i}}}{\sum_{j} e^{W_{j}x_{i}}}) 
+\end{equation}
+
+where $W_{y_{i}}$ represents the weights for the correct label for example $i$ and $W_{j}$ 
+is the weights for any given class (including $W_{y_{i}}$) for example $i$. Note that since the shape 
+of $W$ is DxC, each $W_{j}$ is a column of $W$. 
+
+From here we can compute the gradient with 
+
+
+
+
+
+
+\end{document}
