@@ -16,21 +16,20 @@
 \section*{Assignment 2: Multiclass SVM}
 \end{center}
 
-\noindent Note to the reader: this is my work for assignment two of Michigan's course
+\paragraph{} Note to the reader. This is my work for assignment two of Michigan's course
 EECS 498: Deep Learning for Computer Vision. This document is thoroughly researched but
 may not be perfect. If there's a typo or a correction needs to be made, feel free to 
 email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
 document helpful.
 
-\subsection*{Loss}
+\section{Mathematics}
+\subsection{Loss}
 
-\subsubsection{Resources}
+\subsubsection*{Resources}
 \begin{itemize}
     \item \href{https://cs231n.github.io/linear-classify/#svm-vs-softmax}{CS 231N: SVM's and Softmax }
     \item \href{https://www.youtube.com/watch?v=efR1C6CvhmE}{StatQuest with Josh Starmer}
 \end{itemize}
-
-\subsubsection{Mathematics}
 
 \paragraph{}
 Let's begin by defining some variables. $X$ is an NxD matrix containing 
@@ -65,12 +64,10 @@ of $max(0, -)$. Finally, another (possibly helpful) way to write the loss functi
 
 \subsection{Gradient}
 
-\subsubsection{Resources}
+\subsubsection*{Resources}
 \begin{itemize}
     \item \href{https://cs231n.github.io/optimization-1/#gd}{CS 231N: Optimization}
 \end{itemize}
-
-\subsubsection{Mathematics}
 
 \paragraph{}
 With the loss function understood, let's turn our attention to how we can compute 
@@ -199,11 +196,54 @@ Again, regularization just keeps the SVM algorithm from arbitrarily scaling line
 have other nice properties and there are different types of regularization.
 For more details on this, see the References section.
 
+\section{Programming}
+\href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/tree/main/A2}{Assignment 2: Linear Classifiers}
+
+\subsection{SVM Loss/Gradient Naive}
+This function is pretty straightforward. Just follow the math and you should 
+be able to code it yourself if not follow along at least. 
+
+\subsection{SVM Loss/Gradient Vectorized}
+Vectorizing code can certainly be difficult but the loss isn't too difficult
+for this problem. I matrix multiplied $W$ (DxC) and $X$ (NxD) to get the $scores$ matrix
+(CxD). I then used vector $y$ (Nx1), the range function, and integer indexing to grab
+the scores of the correct class and stored them in $correct-class-score$. Using broadcasting
+it's easy to compute the loss for every score, add delta, and store it in $loss-mat$. 
+Use integer indexing to set all correct scores values to 0 (since not included in the loss)
+and set any value less than 0 equal to 0 ($max()$ function). Finally, just average all the 
+losses in the matrix and add L2 regularization. 
+
+The gradient isn't difficult either in this case. We use boolean tensor indexing to set 
+all positive values in the loss matrix equal to 1. We then sum over each training example and 
+multiply by -1 to get the constant to multiply by $x_i$ for each example and insert that value 
+into the position corresponding to the correct score for every example in the loss matrix. Finally, 
+we can get the sum of all the gradients by matrix multiplying $loss-mat$ and $X$ using broadcasting,
+ get the average by dividing by N, and add our regularization. 
+
+\subsection{Sample Batch}
+This is a pretty basic function that generates a random sample. We just use torch.randint 
+to get indices to sample from, grab those indices, and return the sample batch. 
+
+\subsection{Train Linear Classifier}
+This function is fairly straightforward, we're just bringing all our hard work together 
+to peform gradient descent on whichever linear classifer we're using (SVM for this 
+part of the assignment). 
+
+\subsection{Predict Linear Classifier}
+Since we have our weights, we just compute the scores with $XW$ and return the indices
+with the largest score for each example
+
+\subsection{SVM Get Search Parameters}
+This function just returns different parameter combinations in seach of the best one. 
+
+\subsection{Test One Parameter Set}
+As you can guess, this function tests a single instance of a parameters. We train the model 
+using the data from our data-dict (data dictionary). This class just reuses all our hardwork. 
+We predict, compute training accuracy, validation accuracy, and return. 
 
 
 
-
-\subsection{References}
+\section{References}
 \begin{enumerate}
     \item \href{https://cs231n.github.io/linear-classify/#svm-vs-softmax}{CS 231N: SVM's and Softmax }
     \item \href{https://www.youtube.com/watch?v=efR1C6CvhmE}{StatQuest with Josh Starmer}
