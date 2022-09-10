@@ -26,7 +26,8 @@ All coding assignments are programmed using Google Colab and PyTorch.
   2. K-Nearest Neighbors: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
 
 # Assignment 2
-
+   2. Linear Classifiers: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py)
+  
 # Assignment 3
 
 # Assignment 4
