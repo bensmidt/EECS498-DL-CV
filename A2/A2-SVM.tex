@@ -3,6 +3,9 @@
 \usepackage{tree-dvips}
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bbm}
 \begin{document}
 \noindent Author: Benjamin Smidt
 
@@ -12,6 +15,12 @@
 \begin{center}
 \section*{Assignment 2: Multiclass SVM}
 \end{center}
+
+\noindent Note to the reader: this is my work for assignment two of Michigan's course
+EECS 498: Deep Learning for Computer Vision. This document is thoroughly researched but
+may not be perfect. If there's a typo or a correction needs to be made, feel free to 
+email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
+document helpful.
 
 \subsection*{Loss}
 
@@ -53,16 +62,84 @@ of $max(0, -)$. Finally, another (possibly helpful) way to write the loss functi
     L_{i} = \sum_{j \neq y_{i}}^C max(0, w_{j}^T x_i - w_{y_i}^T x_i + \Delta)
 \end{equation}
 
-\subsubsection{Programming}
+
+\subsection{Gradient}
+
+\subsubsection{Resources}
+\begin{itemize}
+    \item \href{https://cs231n.github.io/optimization-1/#gd}{CS 231N: Optimization}
+\end{itemize}
+
+\subsubsection{Mathematics}
 
 \paragraph{}
-To compute the loss for an entire training set, we compute the average of the losses
-for every example in the training dataset. Computing the loss and the gradient using loops is
-fairly trivial, so I won't go into detail as to how to code this. However, it's a quick 
-and useful implementation to see if your math is correct before going to the trouble
-(at least for me) of vectorizing your code. Note that the code contains regularization, 
-which you can read more about below. 
-\paragraph{}
+With the loss function understood, let's turn our attention to how we can compute 
+the gradient for SVM's loss function. The loss function for one example is given as: 
+
+\begin{equation}
+    L_i = \sum_{j \neq y_i}^{C} max(0, w_j^T x_i - w_{y_i}^T x_i + \Delta)
+\end{equation}
+
+\noindent There's a few important details to note before we begin deriving. The 
+first is the $max()$ function. Although slightly scary at first, all we need to 
+do is split this function into two cases, when $w_j^T x_i - w_{y_i}^T x_i + \Delta > 0$
+and when $w_j^T x_i - w_{y_i}^T x_i + \Delta < 0$. 
+\begin{equation}
+    L_{i, j} = 
+    \begin{cases}
+        0 \text{ if } w_{y_i}^T x_i - w_j^T x_i > \Delta\\
+        w_j^T x_i - w_{y_i}^T x_i + \Delta \text{ if } w_{y_i}^T x_i - w_j^T x_i < \Delta
+    \end{cases} 
+\end{equation}
+
+Of course, when $L_{i, j} = 0$ the gradient is 0. We'll later use the indicator function
+to put our gradient in a single, succinct form when $L_{i, j} = 0$. For the second case 
+$w_{y_i}^T x_i - w_j^T x_i < \Delta$ we have two different cases: $j = y_i$ and $j \neq y_i$. 
+These derivatives are pretty easy so let's just go ahead and compute both real quick.
+We'll start with the derivative with respect to $w_{y_i}$. Remember, these 
+derivatives only apply when $w_{y_i}^T x_i - w_j^T x_i < \Delta$.
+
+\begin{equation}
+    \frac{\partial L_i}{\partial w_{y_i}} = \frac{\partial L_i}{\partial w_{y_i}}
+    \sum_{j \neq y_i}^C w_j^T x_i - w_{y_i}^T x_i + \Delta
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_i}{\partial w_{y_i}} = \sum_{j \neq y_i}^C -x_i
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_i}{\partial w_j} = \frac{\partial L_i}{\partial w_j}
+    \sum_{j \neq y_i}^C w_j^T x_i - w_{y_i}^T x_i + \Delta
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_i}{\partial w_j} = x_i
+\end{equation}
+
+\noindent We have all our derivatives but these only apply when 
+$w_{y_i}^T x_i - w_j^T x_i < \Delta$. To write them succinctly we use indicator functions
+
+\begin{equation}
+    \nabla_{w_{y_i}} L_i = -\sum_{j \neq y_i}^C \mathbbm{1}
+        (w_j^T x_i - w_{y_i}^T x_i + \Delta > 0)x_i
+\end{equation}
+
+\begin{equation}
+    \nabla_{w_j} L_i = \sum_{j \neq y_i}^C \mathbbm{1}
+        (w_j^T x_i - w_{y_i}^T x_i + \Delta > 0)x_i
+\end{equation}
+
+\noindent If you're unfamiliar with indicator functions it's quite alright. They're very simple. 
+If whatever is inside the function is true ($w_{y_i}^T x_i - w_j^T x_i < \Delta$ for us) 
+then the function returns a 1. We can then multiply that by $-x_i$ or $x_i$ to get our 
+gradients for both cases. If whatever is in the function isn't true, 
+($w_{y_i}^T x_i - w_j^T x_i > \Delta$ for us), then the function returns a 0 which is 
+the gradient we need when our $max()$ function returns a 0 to us. As you can see this 
+is a concise (and elegant!) method to write down our gradient.
+
+
+
 
 \subsection{Regularization}
 
@@ -95,9 +172,12 @@ and the "run") by a constant, the slope doesn't change ($\frac{3}{4}x = \frac{6}
 
 What does change for the SVM algorithm is the magnitude of the scores computed using
 those scaled weights. And since SVM's use hinge loss, if 0 loss can be achieved, 
-then the SVM algorithm will arbitrarily scale $w_j$ so that the margin $\Delta$ is as large 
-as possible. This can result in an infinite feedback loop of scaling $w_j$ (see CS 229 
-PS2.1)
+then the SVM algorithm can (and will) arbitrarily scale all scores $s_j$ (since they are less
+than zero no matter their magnitude) so that they are as far from the margin $\Delta$ 
+as possible. Again, the SVM algorithm won't scale $w_j$ when the dataset isn't linearly 
+separable because it would also scale the incorrect values to be more incorrect while not 
+offsetting that effect with "less loss" for correct values since hinge loss prevents the 
+loss from being less than 0. 
 
 To fix this issue we introduce regularization, a term we tack onto the end of the loss function
 that makes the loss function favor small weights. This term is known as the \emph{regularization 
