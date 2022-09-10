@@ -11,6 +11,12 @@
 \section*{Assignment 2: Softmax Classifier}
 \end{center}
 
+\noindent Note to the reader: this is my work for assignment two of Michigan's course
+EECS 498: Deep Learning for Computer Vision. This document is thoroughly researched but
+may not be perfect. If there's a typo or a correction needs to be made, feel free to 
+email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
+document helpful.
+\paragraph{}
 \subsection*{Loss}
 \subsubsection{Mathematics}
 
@@ -32,7 +38,9 @@ to average the loss $L_{i}$ for each example. For SVM's, the loss was
 called \emph{hinge loss}. The loss for a Softmax Classifier is known as 
 \emph{cross-entropy loss}. 
 
-\subsubsection{Code}
+\subsubsection{Programming}
+
+
 \paragraph{} 
 In our implementation of finding the loss, we first matrix 
 multiply $XW$ and raise every value in the resulting matrix to $e$
