@@ -249,7 +249,6 @@ def svm_loss_vectorized(
     loss_mat[loss_mat > 0] = 1  # set all positive losses to 1 to compute w(j) and w(yi)
     w_yi_vals = loss_mat.sum(dim=0) * -1  # sum over each training example and multiply by -1 for w(yi)
     loss_mat[y, range(num_train)] = w_yi_vals  # set those sums equal to index at yi for each example
-    print(loss_mat.shape)
 
     dW = loss_mat.mm(X).t() / num_train + 2 * reg * W 
     #############################################################################
