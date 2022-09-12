@@ -1,11 +1,17 @@
 \documentclass[12pt]{article}
 \usepackage{lingmacros}
 \usepackage{tree-dvips}
+% hyper links
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{bbm}
+% formatting quotes properly
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
 \begin{document}
 \noindent Author: Benjamin Smidt
 
@@ -45,6 +51,84 @@ Next, we compute our ReLU function using a mask and pass $H$ off to $W_2$ to pro
 our final $S$ matrix (for scores). Similar to our hidden layer computation, we matrix multiply
 $HW_2$ and add $b_2$ using broadcasting. This final $S$ matrix has shape NxC as you would 
 expect. Each example has a score for each class. 
+
+\subsection{NN Forward Backward}
+\subsubsection*{Loss}
+\paragraph{}
+This function has two parts. First we compute the loss from our forward pass (previous function). 
+Then we find the gradient using backpropagation. The loss is fairly simply so the first
+part will be brief. For this neural network we're using softmax as our final classifier and adding 
+L2 regularization for every weight matrix (just two, $W_1$ and $W_2$). As such, our loss 
+function is as follows. 
+
+\begin{equation}
+    L = 1/N \sum_{i=1}^N - log(\frac{e^{f_{y_i}}}{\sum_{j=1}^C} e^{f_j}) + 
+    \lambda \sum_{k}^D \sum_{l}^C (w_1)_{l, k}^2 + 
+    \lambda \sum_{k}^D \sum_{l}^C (w_2)_{l, k}^2
+\end{equation}
+
+\noindent For more information about Softmax and regularization see 
+\href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf}
+{A2-Softmax}, the second part of the "Linear Classifiers" assignment in A2. The \emph{
+important detail} here is that I did normalize the output scores that we performed the 
+data loss on (using softmax) to prevent numeric instability. For more info on numeric instability
+check out \href{https://cs231n.github.io/linear-classify/}{CS 231N: Linear Classifiers}
+
+\subsubsection*{Gradient}
+
+Now time for the fun part, backpropagating the gradient through our network! This section may 
+be quite long and tedious because I want to work through the computation from beginning to end.
+Before we begin, remember back propagation takes advantage of the chain rule. Recall that a neural 
+network is really a chain of functions, each one using the output of the previous function as 
+the input of its own until we reach the end of our network and make a prediction. 
+
+What we're actually doing in our backpropagation algorithm is finding the 
+gradient or jacobian with respect to a variable (often a weight matrix $W$) for a modular portion
+of the network, a single function. Since the chain rule simply multiplies the derivatives (or gradients or jacobians 
+depending on your circumstance) of each function in the chain, we're left with a nice, modular 
+method of computing the gradient from beginning to end by just multiplying gradients. 
+
+To make this more clear, let's walk through the loss function of the two layer neural network in A2 using a single 
+example $x_i$. You may wonder why I'm using a lot of row vectors. This is because when we generalize 
+this process to N examples, each row will be an example. So for now many vectors are 1xk (k just represents some
+dimension, not a specific dimension used in the neural network) but in practice they will be Nxk.
+
+\paragraph{}$x_i$: 1xD, $W_1$: DxH, $b_1$: 1xH
+\begin{equation}
+    H = x_iW_1 + b_1
+\end{equation}
+\paragraph{}$H$: 1xH
+\begin{equation}
+    H = max(0, H)
+\end{equation}
+\paragraph{}$W_2$: HxC, $b_2$: 1xC
+\begin{equation}
+    S = HW_2 + b_2
+\end{equation}
+\paragraph{}$S$: 1xC
+\begin{equation}
+    L_i = - log(\frac{e^{S_y}}{{\sum_{j=1}^C} e^{S_j}}) + 
+    \lambda \sum_{k}^D \sum_{l}^C (w_1)_{l, k}^2 + 
+    \lambda \sum_{k}^D \sum_{l}^C (w_2)_{l, k}^2
+\end{equation}
+
+This is our forward propagation through the network for our loss function. 
+If we wanted to find the prediction instead of the loss, 
+we'd replace our last equation $L_i = ...$ with 
+\begin{equation}
+    x_i Prediction = max(\frac{e^{S_j}}{{\sum_{j=1}^C} e^{S_j}}   \forall j \in C )
+\end{equation}
+
+However, we're trying to compute the gradient (of the loss function $L$) so we need 
+to focus on the output of $L_i$. I do quickly want to point out that the graphical 
+representation of this network looks very different (at least to me) from the algebraic plug 
+and chug we see here. They are the same though. The number of nodes in our first layer, our hidden 
+layer, is defined by the number of columns H in $W_1$. Similarly, the number of nodes in our second
+layer, which passes scores off to our softmax function, is defined by the number of columns in $W_2$. 
+As you would expect, the number of nodes is C since we're trying to classify our data into 1 of 
+C categories. 
+
+
 
 \paragraph{}
 

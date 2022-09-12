@@ -1,11 +1,18 @@
 \documentclass[12pt]{article}
 \usepackage{lingmacros}
 \usepackage{tree-dvips}
+% hyper links
 \usepackage{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{bbm}
+% Formatting quotes properly
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
+
 \begin{document}
 \noindent Author: Benjamin Smidt
 
@@ -182,7 +189,7 @@ loss} while our original loss function terms are known as the \emph{data loss}.
 Here's an example of L2 regularization which uses the L2 norm. 
 \begin{equation}
     L = 1/N \sum_{i}^N \sum_{j \neq y_{i}}^C max(0, w_{j}^T x_i - w_{y_i}^T x_i + \Delta)
-    + \lambda \sum_{k}^D \sum_{l}^C W_{k, l}^2
+    + \lambda \sum_{k}^D \sum_{l}^C w_{k, l}^2
 \end{equation}
 
 Regularization only makes sense in the context of a dataset, not a single example, 
