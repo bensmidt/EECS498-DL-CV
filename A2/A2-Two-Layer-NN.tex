@@ -17,20 +17,22 @@
 
 \noindent Created: September 11, 2022
 
-\noindent Last Updated: September 11, 2022
+\noindent Last Updated: September 13, 2022
 \begin{center}
 \section*{Assignment 2: Two Layer Neural Net}
 \end{center}
 
-\paragraph{} Note to the reader. This is my work for assignment two of Michigan's course
-EECS 498: Deep Learning for Computer Vision. This document is thoroughly researched but
+\paragraph{} \emph{Note to reader.} 
+
+This is my work for assignment two of Michigan's course
+EECS 498: Deep Learning for Computer Vision. This document is meant to be used as a reference, 
+explanation, and resource for the assignment, not necessarily a comprehensive overview
+of Neural Networks. Furthermore, this document is well-informed and thoroughly researched but
 may not be perfect. If there's a typo or a correction needs to be made, feel free to 
 email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
 document helpful.
 
-\section{Mathematics}
-
-\section{Programming}
+\section{Functions} 
 
 \subsection{NN Forward Pass}
 \paragraph{}
@@ -88,7 +90,8 @@ of the network, a single function. Since the chain rule simply multiplies the de
 depending on your circumstance) of each function in the chain, we're left with a nice, modular 
 method of computing the gradient from beginning to end by just multiplying gradients. 
 
-To make this more clear, let's walk through the loss function of the two layer neural network in A2 using a single 
+To ensure clarity, let's first walk through the forward pass of computing the 
+loss function of the two layer neural network in A2 using a single 
 example $x_i$. You may wonder why I'm using a lot of row vectors. This is because when we generalize 
 this process to N examples, each row will be an example. So for now many vectors are 1xk (k just represents some
 dimension, not a specific dimension used in the neural network) but in practice they will be Nxk.
@@ -99,7 +102,7 @@ dimension, not a specific dimension used in the neural network) but in practice 
 \end{equation}
 \paragraph{}$H$: 1xH
 \begin{equation}
-    H = max(0, H)
+    H = max(0, h_i) \;\forall \:h_i \in H
 \end{equation}
 \paragraph{}$W_2$: HxC, $b_2$: 1xC
 \begin{equation}
@@ -116,17 +119,126 @@ This is our forward propagation through the network for our loss function.
 If we wanted to find the prediction instead of the loss, 
 we'd replace our last equation $L_i = ...$ with 
 \begin{equation}
-    x_i Prediction = max(\frac{e^{S_j}}{{\sum_{j=1}^C} e^{S_j}}   \forall j \in C )
+    x_i Prediction = max(\frac{e^{S_j}}{{\sum_{j=1}^C} e^{S_j}} \;\forall \: j \in C )
 \end{equation}
 
-However, we're trying to compute the gradient (of the loss function $L$) so we need 
-to focus on the output of $L_i$. I do quickly want to point out that the graphical 
+However, we're trying to compute the gradient of the loss function $L$ so we need 
+to focus on the output of $L_i$. Before moving on, I do quickly want to point out that the graphical 
 representation of this network looks very different (at least to me) from the algebraic plug 
 and chug we see here. They are the same though. The number of nodes in our first layer, our hidden 
 layer, is defined by the number of columns H in $W_1$. Similarly, the number of nodes in our second
 layer, which passes scores off to our softmax function, is defined by the number of columns in $W_2$. 
 As you would expect, the number of nodes is C since we're trying to classify our data into 1 of 
 C categories. 
+
+Alright, let's get backpropagate through this small network. Remember, because of the chain 
+rule we're just multiply gradients together. For instance, if we want to find $\frac{\partial L_i}
+{\partial W_2}$ we can just compute $\frac{\partial L_i}{\partial S} \frac{\partial S}{\partial W_2}$. 
+This is much easier to do rather than substituting $S$ for $HW_2 + b_2$ in the equation for $L_i$ 
+and then finding $\frac{\partial L_i}{\partial W_2}$ directly. Let's begin with $\frac{\partial L_i}{\partial S_y}$
+and $\frac{\partial L_i}{\partial S_j}$
+
+\begin{equation}
+    \frac{\partial L_i}{\partial S_y} =  \frac{\partial}{\partial S_y}
+    - log(\frac{e^{S_y}}{{\sum_{j=1}^C} e^{S_j}}) + \frac{\partial}{\partial S_y}
+    \lambda \sum_{k}^D \sum_{l}^C (w_1)_{l, k}^2 + \frac{\partial}{\partial S_y}
+    \lambda \sum_{k}^D \sum_{l}^C (w_2)_{l, k}^2
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_i}{\partial S_y} =  \frac{\partial}{\partial S_y}
+    - log(\frac{e^{S_y}}{{\sum_{j=1}^C} e^{S_j}})
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_y} =  \frac{\partial}{\partial S_y}
+    log({\sum_{j=1}^C} e^{S_j}) - \frac{\partial}{\partial S_y} S_y
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_y} =  (\frac{1}{\sum_{j=1}^C e^{S_j}})
+    \frac{\partial}{\partial S_y} (e^{S_1} + ... + e^{S_y} + ... + e^{S_C}) - 1
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_y} =  (\frac{e^{S_y}}{\sum_{j=1}^C e^{S_j}})- 1
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_i}{\partial S_j} =  \frac{\partial}{\partial S_j}
+    - log(\frac{e^{S_y}}{{\sum_{j=1}^C} e^{S_j}}) + \frac{\partial}{\partial S_j}
+    \lambda \sum_{k}^D \sum_{l}^C (w_1)_{l, k}^2 + \frac{\partial}{\partial S_j}
+    \lambda \sum_{k}^D \sum_{l}^C (w_2)_{l, k}^2
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_j} =  \frac{\partial}{\partial S_j}
+    - log(\frac{e^{S_y}}{{\sum_{j=1}^C} e^{S_j}})
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_j} =  \frac{\partial}{\partial S_j}
+    log({\sum_{j=1}^C} e^{S_j}) - \frac{\partial}{\partial S_y} S_y
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_j} =  (\frac{1}{\sum_{j=1}^C e^{S_j}})
+    \frac{\partial}{\partial S_y} (e^{S_1} + ... + e^{S_j} + ... + e^{S_C})
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial S_j} =  (\frac{e^{S_j}}{\sum_{j=1}^C e^{S_j}})
+\end{equation}
+
+This is the gradient of the softmax function. For more information on it, check out 
+\href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf}
+{Assignment 2: Softmax} where I explain it more in depth. Notice that we have different derivatives 
+depending on if the score is the correct score or not. We will have to program this but for now, 
+let's store both $\frac{\partial L_i}{\partial S_y}$ and $\frac{\partial L_i}{\partial S_y}$ in a
+single variable $\frac{\partial L_i}{\partial S}$ and continue backward through the network (and no 
+I haven't forgotten the regularization term, I want to add it later).
+
+\begin{equation}
+    \frac{\partial S}{\partial W_2} = \frac{\partial }{\partial W_2} HW_2 + b_2
+\end{equation}
+\begin{equation}
+    \frac{\partial S}{\partial W_2} = H
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial W_2} = \frac{\partial L_i}{\partial S} \frac{\partial S}{\partial W_2}
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial W_2} = \frac{\partial L_i}{\partial S} H
+\end{equation}
+
+If you're attentive you may be looking at equation 20 with some skepticism. And you would certainly 
+be correct in doing so. $\frac{\partial L_i}{\partial S}$ has shape 1xC since $S$ has shape 1xC
+(actually it's technically just a column vector of length C but thinking about it as a row 
+vector will generalize to more examples much more intuitively). $H$ has shape 1xH. Clearly this 
+matrix multiplication won't work. So what gives?
+
+This will be a recurring theme in backpropagation of needing to analyze shapes. Remember that 
+$\frac{\partial y}{\partial Z}$, where $y$ is a scalar and $Z$ is just some variable 
+(scalar,  vector, matrix, tensor, etc.), will \emph{always} have the same shape as $Z$. 
+So $\frac{\partial L_i}{\partial W_2}$ has the same shape as $W_2$ since $L_i$ is (always) a scalar. 
+Since $W_2$ has shape HxC, we actually need to take the outer product between $\frac{\partial L_i}{\partial S}$, 
+shape 1xC, and $H$, shape 1xH. The following results (note that $H.T$ is the transpose of $H$).
+
+\begin{equation}
+    \frac{\partial L_i}{\partial W_2} =  H.T \frac{\partial L_i}{\partial S}
+\end{equation}
+
+Although maybe unintuitive at first, thinking about what these gradients actually mean makes 
+everything fall into place (at least for me). Each value at the position $i, j$ in the matrix $\frac{\partial L_i}{\partial W_2}$
+indicates the change in $L_i$ given a change in $(W_2)_{i j}$.
+
+
+
+\begin{equation}
+    \frac{\partial L_i}{\partial H} = \frac{\partial L_i}{\partial S} \frac{\partial S}{\partial H}
+\end{equation}
+\begin{equation}
+    \frac{\partial S}{\partial H} = \frac{\partial }{\partial W_2} HW_2 + b_2
+\end{equation}
+\begin{equation}
+    \frac{\partial S}{\partial W_2} = H
+\end{equation}
+
+
+
 
 
 
