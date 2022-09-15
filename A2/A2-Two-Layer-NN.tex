@@ -253,7 +253,7 @@ backpropagation of matrix multiplication in his lecture. Anyhow, let's continue.
     \frac{\partial L_i}{\partial H} = \frac{\partial L_i}{\partial S} W_2.T
 \end{equation}
 
-Again, looking that the shapes, you should be able to verify equation 20. $\frac{\partial L_i}{\partial H}$
+Again, looking that the shapes, you should be able to verify equation 25. $\frac{\partial L_i}{\partial H}$
 has shape 1xH, $\frac{\partial L_i}{\partial S}$ 1xC, and $W_2.T$ shape CxH. Okay, onto the ReLU function. 
 
 \begin{equation}
@@ -354,7 +354,73 @@ calculated.
 We're done! Hopefully this helped you understand how backpropagation works, how it's computed, 
 etc. While we walked through it using only one example $x_i$, it should be easy for you to generalize 
 to N examples, especially considering I worked through it with all those row vectors (1xK)
-\paragraph{}
+
+\subsection{NN Train}
+In this function we're just implementing all our hardwork. We use stochastic gradient descent (SGD)
+(as you pretty much always should with deep learning) to update \emph{each} of our alterable 
+parameters. For this network that would be $W_1$, $b_1$, $W_2$, and $b_2$. 
+
+A few things are important to point out here. The first is \emph{num-iters}, an input variable that
+tells our function how many total steps to take. You can see the default is 100. At the beginning of
+the function we also compute \emph{iterations-per-epoch}, a variable that tells how many iterations
+it takes us to reach a single epoch (provided you know \emph{batch-size}). What are epochs? It's the number 
+of passes through the entire training dataset that your algorithm has completed. Since, we're using SGD, 
+one pass through the entire training dataset would be \emph{batch-size} * \emph{iterations-per-epoch}. 
+
+Lastly, you may also notice we're storing and returning important data about the training process. In 
+particular, the loss history, training accuracy history, and validation accuracy history provide us 
+important information about training our neural network. We benchmark these at each epoch, a natural
+cycle to use since after each epoch that network has seen the entire training dataset again. 
+
+\subsection{NN Predict}
+This one is pretty easy. You simply compute your forward pass until you get your final output from 
+softmax. Then, for each example, just return the (column) index of the maximum value. Don't forget
+to alter your scores for numerical stability!. I know this is pretty vague but you should be able 
+to figure it out pretty quickly if you've gotten this far. 
+
+\subsection{NN Get Search Params and Find Best Net}
+Instead of going over the actual function, I'll instead explain the larger themes at work here regarding
+why we need to tune parameters, how they affect the network, and trouble shooting. You can see with the 
+default parameters our network performs pretty bad: a measly 9.77\% validation accuracy. Let's see what 
+parameters may need to be tuned. 
+
+We begin by using some basic debugging strategies. The most obvious is plotting the loss history and 
+classification accuracy. As you can see, they're all over the place. The loss just spreads out but doesn't 
+seem to be getting any better and the classification accuracy is oscillating like crazy! We expect the accuracy 
+to improve tremendously at first before flattening out asymptotically toward at some accuracy. But this isn't 
+what happens at all. 
+
+We also expect there to be at least some gap between the training and validation accuracy. This is because
+we want to find where the parameters that \emph{slightly} overfit the data to make sure we juice the dataset
+for all the information it can give us. If the training and validation accuracy are the same, it suggests we might 
+be underfitting our data leaving some important information on the table. Of course, we want to find the 
+goldilocks area between underfitting and overfitting but that first requires us to overfit and then scale 
+backward to find that goldilocks place. 
+
+Furthermore, when we visualize the weights learned in the first layer, which we saw in our SVM and Softmax
+assignments can be interpreted as some kind of template, all we get is noise. This might suggest that our 
+learning rate wasn't large enough and thus our gradient descent didn't move our parameters to any meaningful 
+place.  
+
+Our first changeable parameter is the capacity, which is the size of our hidden layer. To be clear, we aren't 
+changing the number of layers, we're changing the number of nodes in our hidden layer. For instance, if a single
+layer has eight nodes, adding eight more nodes would double the capacity of that layer. More nodes allow
+the network to learn more complex patterns. Too many nodes and the network will use that extra capacity to 
+overfit the training data. Not enough nodes and the network won't have enough capacity to learn all the 
+generalizable information that the training data has to offer. 
+
+Our next parameter is regularization, something we've run into before. Regularization, as we saw particularly
+with SVM's, is important. However, if the regularization coefficient ($\lambda$) is too large, the model 
+won't have enough flexibility to learn what the dataset has to offer. It will focus too much on minimizing 
+the regularization loss and not enough on minimizing the data loss. 
+
+Our last parameter is the learning rate. You should be familiar with this but the essential idea is that 
+our gradient descent needs to take meaningful steps. Too small of a step size (learning rate) and we'll 
+learn nothing. Too large of a step size and we'll either run right past our minimum (never to find it 
+again) or waste a bunch of computation oscillating around the minimum. With too large of a step size, 
+we don't have enough fine motor control to step close to or onto the minimum and instead continually walk 
+over it since our step size it too large. 
+
 
 
 \section{References}
