@@ -64,7 +64,7 @@ L2 regularization for every weight matrix (just two, $W_1$ and $W_2$). As such, 
 function is as follows. 
 
 \begin{equation}
-    L = 1/N \sum_{i=1}^N - log(\frac{e^{f_{y_i}}}{\sum_{j=1}^C} e^{f_j}) + 
+    L = 1/N \sum_{i=1}^N - log(\frac{e^{f_{y_i}}}{\sum_{j=1}^C e^{f_j}}) + 
     \lambda \sum_{k}^D \sum_{l}^C (w_1)_{l, k}^2 + 
     \lambda \sum_{k}^D \sum_{l}^C (w_2)_{l, k}^2
 \end{equation}
@@ -90,19 +90,19 @@ of the network, a single function. Since the chain rule simply multiplies the de
 depending on your circumstance) of each function in the chain, we're left with a nice, modular 
 method of computing the gradient from beginning to end by just multiplying gradients. 
 
-To ensure clarity, let's first walk through the forward pass of computing the 
+That was wordy so let's clear things up and first walk through the forward pass of computing the 
 loss function of the two layer neural network in A2 using a single 
 example $x_i$. You may wonder why I'm using a lot of row vectors. This is because when we generalize 
-this process to N examples, each row will be an example. So for now many vectors are 1xk (k just represents some
-dimension, not a specific dimension used in the neural network) but in practice they will be Nxk.
+this process to N examples, each row will be an example. So for now many vectors are 1xK ($K$ just represents some
+dimension, not a specific dimension used in the neural network) but in practice they will be NxK.
 
 \paragraph{}$x_i$: 1xD, $W_1$: DxH, $b_1$: 1xH
 \begin{equation}
-    H = x_iW_1 + b_1
+    H_0 = x_iW_1 + b_1
 \end{equation}
 \paragraph{}$H$: 1xH
 \begin{equation}
-    H = max(0, h_i) \;\forall \:h_i \in H
+    H = max(0, H_0) = max(0, h_{0_i}) \;\forall \:h_{0_i} \in H_0
 \end{equation}
 \paragraph{}$W_2$: HxC, $b_2$: 1xC
 \begin{equation}
@@ -173,11 +173,11 @@ and $\frac{\partial L_i}{\partial S_j}$
 \end{equation}
 \begin{equation}
     \frac{\partial L_i}{\partial S_j} =  \frac{\partial}{\partial S_j}
-    log({\sum_{j=1}^C} e^{S_j}) - \frac{\partial}{\partial S_y} S_y
+    log({\sum_{j=1}^C} e^{S_j}) - \frac{\partial}{\partial S_j} S_y
 \end{equation}
 \begin{equation}
     \frac{\partial L_i}{\partial S_j} =  (\frac{1}{\sum_{j=1}^C e^{S_j}})
-    \frac{\partial}{\partial S_y} (e^{S_1} + ... + e^{S_j} + ... + e^{S_C})
+    \frac{\partial}{\partial S_j} (e^{S_1} + ... + e^{S_j} + ... + e^{S_C})
 \end{equation}
 \begin{equation}
     \frac{\partial L_i}{\partial S_j} =  (\frac{e^{S_j}}{\sum_{j=1}^C e^{S_j}})
@@ -221,9 +221,22 @@ shape 1xC, and $H$, shape 1xH. The following results (note that $H.T$ is the tra
     \frac{\partial L_i}{\partial W_2} =  H.T \frac{\partial L_i}{\partial S}
 \end{equation}
 
-Although maybe unintuitive at first, thinking about what these gradients actually mean makes 
-everything fall into place (at least for me). Each value at the position $i, j$ in the matrix $\frac{\partial L_i}{\partial W_2}$
-indicates the change in $L_i$ given a change in $(W_2)_{i j}$.
+Although it maybe unintuitive at first, thinking about what these gradients actually mean makes 
+everything fall into place (at least for me). Each scalar in the vector $\frac{\partial L_i}{\partial S}$
+indicates the the proportional change in $L_i$ given a small change in $S$. Similarly, each scalar in the 
+the vector $\frac{\partial S}{\partial W_2}$ indicates the proportional change in $S$ given a small change 
+$W_2$. 
+
+Recall that we found $S$ using the function $S = HW_2 + b_2$. You can see from this operation that
+every single value in the first column of $W_2$ scales the first scalar in $S$ by the value it multiplies
+by in the matrix multiply. For instance, $w_{2, 1}$ (first row, second column) scales the $s_1$ by 
+$h_2$; $w_{4, 1}$ scales $s_1$ by $h_4$; $w_{3, 2}$ scales $s_2$ by $h_3$. Thus, it makes sense when computing
+the gradient to take the outer product between $H$ and $S$ since each combination of values in $H$ and 
+$S$ can be traced back to a different scalar in $W_2$ when were simply computing $S$. 
+
+Whew! That was a mouthful. If you don't understand, I'd draw out the matrices and trace through them to see 
+what I'm talking about. If that doesn't work, checkout this \href{https://youtu.be/PBe2P05ljPw?t=3152}{~10 minute segment} of Justin Johnson explaining
+backpropagation of matrix multiplication in his lecture. Anyhow, let's continue. 
 
 
 
@@ -231,17 +244,116 @@ indicates the change in $L_i$ given a change in $(W_2)_{i j}$.
     \frac{\partial L_i}{\partial H} = \frac{\partial L_i}{\partial S} \frac{\partial S}{\partial H}
 \end{equation}
 \begin{equation}
-    \frac{\partial S}{\partial H} = \frac{\partial }{\partial W_2} HW_2 + b_2
+    \frac{\partial S}{\partial H} = \frac{\partial }{\partial H} HW_2 + b_2
 \end{equation}
 \begin{equation}
-    \frac{\partial S}{\partial W_2} = H
+    \frac{\partial S}{\partial H} = W_2
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial H} = \frac{\partial L_i}{\partial S} W_2.T
 \end{equation}
 
+Again, looking that the shapes, you should be able to verify equation 20. $\frac{\partial L_i}{\partial H}$
+has shape 1xH, $\frac{\partial L_i}{\partial S}$ 1xC, and $W_2.T$ shape CxH. Okay, onto the ReLU function. 
 
+\begin{equation}
+    \frac{\partial L_i}{\partial H_0} = \frac{\partial L_i}{\partial S} \frac{\partial S}{\partial H}
+    \frac{\partial H}{\partial H_0}
+\end{equation}
+\begin{equation}
+    \frac{\partial H}{\partial H_0} = \mathbbm{1}(H_0 > 0) = \mathbbm{1}(h_{0_i} > 0) \; \forall \: h_{0_i} \in H_0
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial H_0} = (\frac{\partial L_i}{\partial S}\: W_2.T) * \mathbbm{1}(H_0 > 0)
+\end{equation}
 
+Okay if you're not confused here I'd be slightly surprised. First thing, in our forward pass we computed 
+$H = max(0, H_0)$, which just means for every element in the matrix, change it to 0 if it's less than 0 
+and leave it alone otherwise. This is also known as the ReLU function. It's not difficult to show that 
+the derivative for a given value is 1 if that value is $> 0$ and 0 if that value is 0. Let $f = max(0, x)$
+be the ReLU function. 
 
+\begin{equation}
+    f = 
+    \begin{cases}
+        0 \; $if$ \; x \le 0\\
+        x \; $if$ \; x > 0
+    \end{cases} 
+\end{equation}
+\begin{equation}
+    \frac{df}{dx} = 
+    \begin{cases}
+        0 \; $if$ \; x \le 0\\
+        1 \; $if$ \; x > 0
+    \end{cases} 
+\end{equation}
 
+Thus, we can form a matrix that is of equivalent size to the matrix passed through our ReLU function. By 
+filling it with 0's where the original input is $ \le 0$ and 1's where the original input is $ > 0$, we 
+can perform a simple element wise multiplication between this matrix (which is a representation of 
+($\frac{\partial L_i}{\partial H}$) and $\frac{\partial L_i}{\partial H}$. 
 
+It is important to note that 
+this is \emph{not} the explicit jacobian but an implicit representation of the jacobian. Said differently, 
+this is not the mathematically rigorous way to write the gradient but it is an equivalent and simpler 
+way that proves computationallly more efficient. I've actually been using an implicit representation the 
+whole way through but I didn't want to muddle the explanation and make it more confusing than it already is. 
+For more information on the gradient/jacobian of the ReLU function, see \href{https://www.youtube.com/watch?v=PBe2P05ljPw}{this
+~6 segment} of Justin Johnson explaining it in his lecture. 
+
+Okay, almost finished I promise. 
+\begin{equation}
+    \frac{\partial L_i}{\partial x_i} = \frac{\partial L_i}{\partial S} \frac{\partial S}{\partial H}
+    \frac{\partial H}{\partial H_0} \frac{\partial H_0}{\partial x_i} 
+\end{equation}
+\begin{equation}
+    \frac{\partial H_0}{\partial x_i} = \frac{\partial}{\partial x_i} x_i W_1 + b_1
+\end{equation}
+\begin{equation}
+    \frac{\partial H_0}{\partial x_i} = W_1
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial x_i} = [ (\frac{\partial L_i}{\partial S}\: W_2.T) * 
+    \mathbbm{1}(H_0 > 0) ] W_1.T
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_i}{\partial W_1} = \frac{\partial L_i}{\partial S} \frac{\partial S}{\partial H}
+    \frac{\partial H}{\partial H_0} \frac{\partial H_0}{\partial W_1} 
+\end{equation}
+\begin{equation}
+    \frac{\partial H_0}{\partial W_1} = \frac{\partial}{\partial W_1} x_i W_1 + b_1
+\end{equation}
+\begin{equation}
+    \frac{\partial H_0}{\partial W_1} = x_i
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial W_1} = x_i.T [ (\frac{\partial L_i}{\partial S}\: W_2.T) * 
+    \mathbbm{1}(H_0 > 0) ]
+\end{equation}
+
+And we're ... almost done. You may have noticed we never added the regulatization term to our losses! 
+Let's to do that quickly. I'll write our original loss function for reference and then add the loss for 
+the regularization terms (Note that "$x \; +\!= 1$" means "$x = x + 1$")
+
+\begin{equation}
+    L = 1/N \sum_{i=1}^N - log(\frac{e^{f_{y_i}}}{\sum_{j=1}^C} e^{f_j}) + 
+    \lambda \sum_{k}^D \sum_{l}^C (w_1)_{l, k}^2 + 
+    \lambda \sum_{k}^D \sum_{l}^C (w_2)_{l, k}^2
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial W_1} +\!= \lambda * 2 * W_1
+\end{equation}
+\begin{equation}
+    \frac{\partial L_i}{\partial W_2} +\!= \lambda * 2 * W_2
+\end{equation}
+
+All I did here was \emph{add} the gradient with respect to $L_i$ to the gradient we originally 
+calculated. 
+
+We're done! Hopefully this helped you understand how backpropagation works, how it's computed, 
+etc. While we walked through it using only one example $x_i$, it should be easy for you to generalize 
+to N examples, especially considering I worked through it with all those row vectors (1xK)
 \paragraph{}
 
 
