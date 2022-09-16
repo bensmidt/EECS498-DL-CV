@@ -26,8 +26,11 @@ All coding assignments are programmed using Google Colab and PyTorch.
   2. K-Nearest Neighbors: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
 
 # Assignment 2
-   2. Linear Classifiers: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py), [Support Vector Machines Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf), [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
-   3. Two Layer Neural Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py), [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
+   2. Linear Classifiers: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py), 
+   - [Support Vector Machines Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf)
+   - [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
+   4. Two Layer Neural Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
+   - [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
   
 # Assignment 3
 
