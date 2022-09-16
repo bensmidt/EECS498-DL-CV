@@ -7,6 +7,8 @@ import random
 import statistics
 from linear_classifier import sample_batch
 from typing import Dict, List, Callable, Optional
+import eecs598
+from eecs598.a2_helpers import plot_acc_curves, plot_stats
 
 
 def hello_two_layer_net():
@@ -147,7 +149,15 @@ def nn_forward_pass(params: Dict[str, torch.Tensor], X: torch.Tensor):
     # shape (N, C).                                                            #
     ############################################################################
     # Replace "pass" statement with your code
-    pass
+    H = b1.shape
+    C = b2.shape
+
+    # hidden layer
+    hidden = X.mm(W1) + b1.reshape(1, -1) # b1 reshaped to 1xH
+    # relu 
+    hidden = hidden * (hidden > 0) # use mask to set all values lt 0 = 0
+    # scores
+    scores = hidden.mm(W2) + b2.reshape(1, -1) # b2 reshaped to 1xC
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -211,8 +221,23 @@ def nn_forward_backward(
     # If you are not careful here, it is easy to run into numeric instability  #
     # (Check Numeric Stability in http://cs231n.github.io/linear-classify/).   #
     ############################################################################
-    # Replace "pass" statement with your code
-    pass
+    # Regularization loss for W1 and W2
+    loss = reg * (torch.sum(W1**2) + torch.sum(W2**2))
+
+    # Normalize scores to prevent numeric instability
+    scores_cp = scores - torch.max(scores)
+    # exponential of scores
+    exp_scores = torch.exp(scores_cp)
+    # get correct scores
+    correct_exp_scores = exp_scores[range(N), y] # scores shape: NxC
+
+    # loss for each example
+    exp_scores_sum = torch.sum(exp_scores, dim=1)
+    loss_vec = -torch.log( correct_exp_scores / exp_scores_sum )
+    # total loss
+    loss += torch.sum(loss_vec)
+    # average loss ("scaled by batch size?"; not really sure what that meant)
+    loss /= N
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -225,8 +250,45 @@ def nn_forward_backward(
     # For example, grads['W1'] should store the gradient on W1, and be a      #
     # tensor of same size                                                     #
     ###########################################################################
-    # Replace "pass" statement with your code
-    pass
+    # d_scores
+    d_scores = torch.zeros_like(scores)
+    # add d_scores_y
+    # print("scores:", scores)
+    # print(exp_scores)
+    # print(correct_exp_scores)
+    # print(exp_scores_sum)
+    d_scores_correct = (correct_exp_scores / exp_scores_sum) - 1
+    # print(d_scores_correct)
+    d_scores[range(N), y] = d_scores_correct
+    # add d_scores_j
+    exp_scores[range(N), y] = 0
+    # print("j:", exp_scores)
+    d_scores_incorrect = exp_scores / exp_scores_sum.view(-1, 1)
+    # print(d_scores_incorrect)
+    d_scores += d_scores_incorrect
+    # print(d_scores)
+    
+    # W2
+    d_W2 = 2 * reg * W2 # regularization loss
+    d_W2 += h1.t().mm(d_scores)
+    grads['W2'] = d_W2 / N
+    # b2
+    grads['b2'] = torch.sum(d_scores, dim=0) / N
+    # h1
+    d_h1 = d_scores.mm(W2.t())
+
+    # W1
+    d_W1 = 2 * reg * W1 # regulatization loss
+    relu_mask = h1 > 0
+    d_h0 = d_h1 * relu_mask
+    d_W1 += X.t().mm(d_h0) 
+    grads['W1'] = d_W1 / N
+    grads['b1'] = torch.sum(d_h0, dim=0) / N
+    # X
+    d_X = d_h0.mm(W1.t())
+
+
+    
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -306,8 +368,10 @@ def nn_train(
         # using stochastic gradient descent. You'll need to use the gradients   #
         # stored in the grads dictionary defined above.                         #
         #########################################################################
-        # Replace "pass" statement with your code
-        pass
+        params['W1'] -= learning_rate * grads['W1']
+        params['b1'] -= learning_rate * grads['b1']
+        params['W2'] -= learning_rate * grads['W2']
+        params['b2'] -= learning_rate * grads['b2']
         #########################################################################
         #                             END OF YOUR CODE                          #
         #########################################################################
@@ -364,8 +428,25 @@ def nn_predict(
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    # Replace "pass" statement with your code
-    pass
+    W1 = params['W1']
+    b1 = params['b1']
+    W2 = params['W2']
+    b2 = params['b2']
+    H, C = W2.shape
+
+    # hidden layer
+    hidden = X.mm(W1) + b1.reshape(1, -1) # b1 reshaped to 1xH
+    # relu 
+    hidden = hidden * (hidden > 0) # use mask to set all values lt 0 = 0
+    # scores
+    scores = hidden.mm(W2) + b2.view(1, -1) # b2 reshaped to 1xC
+    # softmax
+    scores -= torch.max(scores) # numerical stability; log C = -max(f_i,y)
+    exp_scores = torch.exp(scores)
+    exp_scores_sum = torch.sum(exp_scores)
+    softmax_pred = exp_scores / exp_scores_sum
+    # prediction
+    vals, y_pred = torch.max(softmax_pred, dim=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
@@ -399,7 +480,10 @@ def nn_get_search_params():
     # classifier.                                                             #
     ###########################################################################
     # Replace "pass" statement with your code
-    pass
+    learning_rates = [2e-1]
+    hidden_sizes = [64, 128, 256]
+    regularization_strengths = [1e-1]
+    learning_rate_decays = [.999]
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
@@ -459,8 +543,43 @@ def find_best_net(
     # to write code to sweep through possible combinations of hyperparameters   #
     # automatically like we did on the previous exercises.                      #
     #############################################################################
-    # Replace "pass" statement with your code
-    pass
+    # get data
+    X_train = data_dict['X_train']
+    N, D = X_train.shape
+
+    accuracy = {}
+    best_net = None
+    best_stat = None
+    best_val_acc = 0
+    
+    print(get_param_set_fn())
+    learning_rates, hidden_sizes, regularization_strengths, learning_rate_decays = get_param_set_fn()
+    for lrd in learning_rate_decays: 
+      for lr in learning_rates: 
+        for reg in regularization_strengths: 
+          stat_dict = {}
+          for hs in hidden_sizes:
+            # define input dimensions, later capacity, output classes
+            Model = TwoLayerNet(input_size=D, hidden_size=hs, output_size=10, dtype=data_dict['X_train'].dtype) 
+            # train
+            stats = Model.train(data_dict['X_train'], data_dict['y_train'], data_dict['X_val'], data_dict['y_val'],
+            num_iters = 3000, batch_size = 1000, learning_rate = lr, 
+            learning_rate_decay= lrd, reg = reg, verbose = False)
+            # predict
+            y_pred = Model.predict(data_dict['X_val'])
+            # accuracy
+            val_acc = 100 * (y_pred == data_dict['y_val']).double().mean().item()
+            print("hs: {}, lr: {}, reg:{}, lrd: {}".format(hs, lr, reg, lrd), end = '')
+            print(" has validation accuracy:", val_acc)
+            plot_stats(stats)
+            # store data
+            accuracy["hs: {}, lr: {}, reg:{}, lrd: {}".format(hs, lr, reg, lrd)] = val_acc
+            if val_acc > best_val_acc: 
+              best_val_acc = val_acc
+              best_stat = stats
+              best_net = Model         
+
+
     #############################################################################
     #                               END OF YOUR CODE                            #
     #############################################################################
