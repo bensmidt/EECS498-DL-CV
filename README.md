@@ -31,7 +31,7 @@ All coding assignments are programmed using Google Colab and PyTorch.
    - [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
    2. Two Layer Neural Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
    - [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
-   3. MNIST Challenge Problem: IN PROGRESS
+   3. MNIST Challenge Problem: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/challenge_problem.ipynb)
   
 # Assignment 3
 
