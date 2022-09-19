@@ -1,0 +1,213 @@
+\documentclass[12pt]{article}
+\usepackage{lingmacros}
+\usepackage{tree-dvips}
+% hyper links
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bbm}
+% Formatting quotes properly
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
+
+\begin{document}
+\noindent Author: Benjamin Smidt
+
+\noindent Created: September 19, 2022
+
+\noindent Last Updated: September 19, 2022
+\begin{center}
+\section*{Assignment 2: Full Connected Networks}
+\end{center}
+
+\paragraph{} \emph{Note to reader.} 
+
+This is my work for assignment three of Michigan's course
+EECS 498: Deep Learning for Computer Vision. This document is meant to be used as a reference, 
+explanation, and resource for the assignment, not necessarily a comprehensive overview
+of Neural Networks. Furthermore, this document is well-informed and thoroughly researched but
+may not be perfect. If there's a typo or a correction needs to be made, feel free to 
+email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
+document helpful.
+
+\section{Functions}
+
+\subsection{Linear.Forward}
+The \emph{Forward} function, implemented in the \emph{Linear} class is simple. We aren't doing 
+anything different from the matrix multiplication and bias computed in the two layer
+neural network we built last assignment. See \href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf}
+{A2: Two Layer Neural Net} for an in depth explanation of how this matrix multiplication was 
+computed. 
+
+\subsection{Linear.Backward}
+The \emph{Backward} function, implemented in the \emph{Linear} class certainly isn't
+as simply as the forward function. However, I explained how to compute the gradient of 
+a matrix multiplication for $x$, $w$, and $b$ in great length in the last assignment 
+\href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf}
+{A2: Two Layer Neural Net}.
+
+\subsection{ReLU.Forward}
+Just look up the documentation for torch.clamp() if you're confused. It's just setting
+every value less than zero equal to zero and leaving positive values alone. 
+
+\subsection{ReLU.Backward}
+This is getting repetitive. Again, see A2: Two Layer Neural Net for information on ReLU. 
+I explain, in depth, both the forward and backward pass of ReLU including the gradient 
+and how to compute it. 
+
+\subsection{Linear-ReLU.forward and Linear-ReLU.backward}
+These functions are just utilizing the functions we just created. Although, it's worth 
+noting how beautiful the modularity of this code truly is. With no extra work we were 
+able to easily define a common function. Obviously, I will not be explaining object oriented 
+programming (OOP). That is literally a course in and of itself. However, I did just want to 
+stop for a second and marvel at the beauty that OOP has produced here. 
+
+\subsection{Softmax and SVM}
+Since we spent a LOT of time deriving, explaining, and programming the SVM and Softmax
+algorithms in assigment 2, they were nice enough to gift us this implementation. To be clear, 
+the following code is NOT my own. It is freely available from the 
+\href{https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/assignment3.html} 
+{EECS 498 Course Website} in assignment 3. If you'd like to see my implementation (which is almost
+certainly slightly worse), you can check out 
+\href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf}{A2: Softmax}
+or \href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf}{A2: Multiclass SVM}.
+
+\paragraph{}
+\textbf{SVM-Loss-Gradient}
+\begin{verbatim}
+def svm_loss(x, y):
+    """
+    Computes the loss and gradient using for multiclass SVM classification.
+    Inputs:
+    - x: Input data, of shape (N, C) where x[i, j] is the score for the jth
+      class for the ith input.
+    - y: Vector of labels, of shape (N,) where y[i] is the label for x[i] and
+      0 <= y[i] < C
+    Returns a tuple of:
+    - loss: Scalar giving the loss
+    - dx: Gradient of the loss with respect to x
+    """
+    N = x.shape[0]
+    correct_class_scores = x[torch.arange(N), y]
+    margins = (x - correct_class_scores[:, None] + 1.0).clamp(min=0)
+    margins[torch.arange(N), y] = 0.
+    loss = margins.sum() / N
+    num_pos = (margins > 0).sum(dim=1)
+    dx = torch.zeros_like(x)
+    dx[margins > 0] = 1.
+    dx[torch.arange(N), y] -= num_pos.to(dx.dtype)
+    dx /= N
+    return loss, dx
+\end{verbatim}
+
+Let's quickly review how this code computes SVM loss. 
+
+\begin{equation}
+    L_{i} = \sum_{j \neq y_{i}}^C max(0, x_{j} - x_{y_{i}} + \Delta)
+\end{equation}
+
+First, we get the correct class scores. Then we compute the margins by 
+subtracting each value from the correct score in it's example, 
+adding $\Delta$ (=1), and finally taking the max of that value and zero. 
+Remember, this has the interpretation of SVM wanting the difference between 
+the correct class score and every other score to be $\geq \Delta$. Lastly, 
+we set all the correct class scores equal to zero and average the losses 
+over each example. 
+
+The derivatives of SVM with respect to $x_j$ and $x_{y_i}$ are as follows. 
+\begin{equation}
+    \nabla_{x_{y_i}} L_i = -\sum_{j \neq y_i}^C \mathbbm{1}
+        (x_j - x_{y_i} + \Delta > 0)
+\end{equation}
+
+\begin{equation}
+    \nabla_{x_j} L_i = \sum_{j \neq y_i}^C \mathbbm{1}
+        (x_j - x_{y_i} + \Delta > 0)
+\end{equation}
+
+This is somewhat remiscient of the ReLU function since we have to deal with the 
+$max()$ function. Regarding code though, for each example we simply sum the number of terms 
+with a margin greater than zero. Then we set the gradient value at a given example N
+equal to this value, giving us the gradient with respect to $x_{y_i}$. For the gradient
+with respect to $x_j$, we simply set all the incorrect scores index values to 1 if their
+margin exceeds 0 and (leave it at) zero otherwise. Finally we divide all the values by 
+N since we average the values over N examples (if we summed them then we wouldn't divide
+all the values by N). 
+
+\paragraph{}
+\textbf{Softmax-Loss-Gradient}
+\begin{verbatim}
+def softmax_loss(x, y):
+    """
+    Computes the loss and gradient for softmax classification.
+    Inputs:
+    - x: Input data, of shape (N, C) where x[i, j] is the score for
+      the jth class for the ith input.
+    - y: Vector of labels, of shape (N,) where y[i] is the label
+      for x[i] and 0 <= y[i] < C
+    Returns a tuple of:
+    - loss: Scalar giving the loss
+    - dx: Gradient of the loss with respect to x
+    """
+    shifted_logits = x - x.max(dim=1, keepdim=True).values
+    Z = shifted_logits.exp().sum(dim=1, keepdim=True)
+    log_probs = shifted_logits - Z.log()
+    probs = log_probs.exp()
+    N = x.shape[0]
+    loss = (-1.0 / N) * log_probs[torch.arange(N), y].sum()
+    dx = probs.clone()
+    dx[torch.arange(N), y] -= 1
+    dx /= N
+    return loss, dx
+\end{verbatim}
+
+For softmax, our loss is: 
+
+\begin{equation}
+    L_{i} = -log(\frac{e^{x_{y_{i}}}}{\sum_{j=1}^C e^{x_j}}) 
+    = -x_{y_{i}} + log(\sum_{j=1}^C e^{x_{j}})
+\end{equation}
+
+In the code, we first normalize the everything to improve numerical stability. 
+We can shift everything by any constant K and the loss won't change. 
+
+\begin{equation}
+    \frac{K e^{x_{y_{i}}}}{K \sum_{j=1}^C e^{x_j}} = 
+    \frac{e^{x_{y_{i}} + logK}}{\sum_{j=1}^C e^{x_j + log K}} 
+\end{equation}
+
+For simplicity, we often choose $log K$ to be the negative of the max value in each example 
+$e^x$. This prevents any single $e^{x_j}$ value from becoming too large
+and subsequently producing a NaN or infinity. 
+
+Anyways, we compute the loss function by adding the correct class score values
+to the log of the sum of the scores in each example. Then we multiply by negative 1
+and average over N examples. Personall, I like to distribut the negative 1 instead 
+of multiplying at the end as seen in my loss function equation above, but it's all
+the same at the end of the day. 
+
+Lasly, here are the derivatives. 
+
+\begin{equation}
+    \frac{\partial L_{i}}{\partial x_{y_i}} = \frac{e^{x_{y_i}}}
+    {\sum_{j=1}^C e^{x_{j}}} - 1
+\end{equation}
+
+\begin{equation}
+    \frac{\partial L_{i}}{\partial x_j} = \frac{e^{x_{j}}}
+    {\sum_{j=1}^C e^{x_j}}
+\end{equation}
+
+To compute the gradient we simply reuse the \emph{probs} variable which stores
+all the values of both gradients we need. We simply alter the correct scores
+indices by subtracting 1 and finish by dividing by N since we average the loss 
+over N examples. 
+
+\subsection{TwoLayerNet Class}
+
+\section{References}
+
+\end{document}
