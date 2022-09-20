@@ -78,7 +78,7 @@ certainly slightly worse), you can check out
 or \href{https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf}{A2: Multiclass SVM}.
 
 \paragraph{}
-\textbf{SVM-Loss-Gradient}
+\subsubsection{SVM-Loss-Gradient}
 \begin{verbatim}
 def svm_loss(x, y):
     """
@@ -132,15 +132,15 @@ The derivatives of SVM with respect to $x_j$ and $x_{y_i}$ are as follows.
 
 This is somewhat remiscient of the ReLU function since we have to deal with the 
 $max()$ function. Regarding code though, for each example we simply sum the number of terms 
-with a margin greater than zero. Then we set the gradient value at a given example N
+with a margin greater than zero. Then we set the gradient value of the correct score at a given example N
 equal to this value, giving us the gradient with respect to $x_{y_i}$. For the gradient
 with respect to $x_j$, we simply set all the incorrect scores index values to 1 if their
 margin exceeds 0 and (leave it at) zero otherwise. Finally we divide all the values by 
-N since we average the values over N examples (if we summed them then we wouldn't divide
-all the values by N). 
+N since we average the values over N examples in our loss function (if we summed them in 
+our loss function then we wouldn't divide by N). 
 
 \paragraph{}
-\textbf{Softmax-Loss-Gradient}
+\subsubsection{Softmax-Loss-Gradient}
 \begin{verbatim}
 def softmax_loss(x, y):
     """
@@ -187,8 +187,8 @@ and subsequently producing a NaN or infinity.
 
 Anyways, we compute the loss function by adding the correct class score values
 to the log of the sum of the scores in each example. Then we multiply by negative 1
-and average over N examples. Personall, I like to distribut the negative 1 instead 
-of multiplying at the end as seen in my loss function equation above, but it's all
+and average over N examples. Personally, I like to distribute the negative 1 instead 
+of multiplying at the end as seen in my loss function equation above (Eq. 4), but it's all
 the same at the end of the day. 
 
 Lasly, here are the derivatives. 
@@ -204,11 +204,39 @@ Lasly, here are the derivatives.
 \end{equation}
 
 To compute the gradient we simply reuse the \emph{probs} variable which stores
-all the values of both gradients we need. We simply alter the correct scores
-indices by subtracting 1 and finish by dividing by N since we average the loss 
+all the values of both gradients we need. We simply alter the correct score
+indices by subtracting 1 and finish by dividing by N since, again, we average the loss 
 over N examples. 
 
 \subsection{TwoLayerNet Class}
+
+\subsubsection{Initialization}
+We use a two layer neural net class to to easily define our neural net. We begin by initilalizing
+a dictionary, \emph{self.params}, and a float \emph{self.reg}. \emph{self.reg} is, of course, 
+our regularization constant $\lambda$ and \emph{self.params} stores our changeable parameters 
+in our network. Since we're creating a two later network with an architecture of fully connected
+layers Linear - ReLU - Linear - Softmax (same as A2), we'll need four parameters. $W1$ and $b1$ our 
+for our first Linear operation and $W2$ and $b2$ are for our second linear operation. 
+
+We initialize each of the weight matrices $W1$ and $W2$ using a random normal distribution 
+with mean 0 and standard deviation \emph{weight-scale}, a user input value into the TwoLayerNet Class
+that defaults to $1*10^{-3}$
+
+\subsubsection{Loss}
+We can easily define our forward pass through the network using the classes we just created. 
+In particular we call \emph{Linear-ReLU.forward} with $W1$ and $b1$ and pass the resulting 
+hidden matrix to \emph{Linear.forward} with $W2$ and $b2$. Finally, we pass the outputted scores
+matrix to \emph{softmax-loss}, the function defined and reviewed in the previous page, and add 
+our regularization loss to the data loss computed by \emph{softmax-loss}. 
+
+\subsubsection{Gradient}
+Similar to our forward pass, we easily define our backward pass using the functions and classes 
+we've created. The key here is really understanding what's being input and returned from our 
+classes and what data from our forward pass (\emph{cache} in the code) needs to be passed to 
+our function computing the backward pass. It's pretty simply, so I'll leave it to you to see how 
+it's implemented in the code. Everything is nicely labeled so there shouldn't be any surprises. 
+Just don't forget to add the gradient for your regularization loss! 
+
 
 \section{References}
 
