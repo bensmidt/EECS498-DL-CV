@@ -26,10 +26,13 @@
 \paragraph{} \emph{Note to reader.} 
 
 This is my work for assignment three of Michigan's course
-EECS 498: Deep Learning for Computer Vision. This document is meant to be used as a reference, 
+\href{https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/}
+{EECS 498: Deep Learning for Computer Vision}. The majority of explanations and understanding are 
+derived from \href{https://www.youtube.com/watch?v=dJYGatp4SvA&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=1}
+{Justin Johnson's Lectures} and \href{http://cs231n.stanford.edu/schedule.html}{Stanford's CS 231N Lecture Notes}.
+This document is meant to be used as a reference, 
 explanation, and resource for the assignment, not necessarily a comprehensive overview
-of Neural Networks. Furthermore, this document is well-informed and thoroughly researched but
-may not be perfect. If there's a typo or a correction needs to be made, feel free to 
+of Neural Networks. If there's a typo or a correction needs to be made, feel free to 
 email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
 document helpful.
 
@@ -237,7 +240,122 @@ our function computing the backward pass. It's pretty simply, so I'll leave it t
 it's implemented in the code. Everything is nicely labeled so there shouldn't be any surprises. 
 Just don't forget to add the gradient for your regularization loss! 
 
+\subsection{FullyConnectedNet Class}
+
+\subsubsection{Initialization}
+When writing this I have NOT implemented different update rules (SGD + Momentum, RMSProp, Adam, Dropout). 
+I'll explain those later in this document since the first implementation of FullyConnectedNet did 
+not include implementing these various update rules. 
+
+So, for initialization, I essentially just did the exact same process as the two layer network
+except I generalized the hidden layers. I had to hard code the first and last layers since the first
+layer is the only one that uses \emph{input-dim} (number of dimensions for each example in $X$) and 
+the last layer is the only one that uses \emph{num-classes}. There is some python specific syntax
+I used for storing an arbitrary number of parameters in \emph{self.params}. You should be able 
+to easily look up Python documentation for what they do though. I'm just iteratively labelling 
+$W$ and $b$ with a number to keep track of the parameters, nothing too exciting. 
+
+\subsubsection{Loss}
+Things can get a little hairy here but the idea is still the exact same as the two layer network
+we just implemented. I iteratively pass the output of the \emph{Linear-ReLU.forward()} function
+as the input of the next \emph{Linear-ReLU.forward()} function until I reach the very last layer. 
+To compute the final \emph{scores} matrix we need to remember to use \emph{Linear} without \emph{ReLU}. 
+We can then easily pass the scores to softmax which kindly returns our loss and \emph{d-scores} to 
+begin backpropagating. 
+
+Some easily forgetten things I need to mention. First, we need to store all the \emph{caches} or 
+"weights" that we're computing throughout the network. We will need them for backpropagation. Second, 
+it's very easy to forget to add regularization. This must be done iteratively as well and is easily 
+computed with the for loop we're already using in our forward propagation. 
+
+\subsubsection{Gradient}
+Finally, we get to backprop. I've yet to mention this for previous assignments but I do want to 
+point out the if-statement that catches whether  we're in "train" or "test" mode. Obviously, if 
+we're in test mode we can't do backprop because we have no "correct answers" with which to 
+compute our loss function. It's an important detail that can be easily missed, so yeah. 
+
+Again, we iteratively backpropagate through our network in the same manner we've done for our 
+two layer network. The last layer (first computation) must be done first since it's the only 
+layer using \emph{Linear} while the rest can be computed in our for-loop using \emph{Linear-ReLU}. 
+As a reminder, don't forget the regularization (I'm bad about that :( ). 
+
+\subsection{Update Rules}
+\subsubsection{SGD + Momentum}
+
+Physics. Everything always comes back to physics. This idea is simply yet very powerful.
+To improve stochastic gradient descent (SGD), we can add "momentum", a fancy word for saying: the
+longer our gradient has been moving in the same direction along a given axis, the larger we 
+want that step size to be along that axis. In the same vein, more momentum should make it more 
+difficult to reverse the velocity along that axis. 
+
+Why does this work? Well, it gives more weight
+to the directions that are consistently updating in the same direction. By doing so, oscillating 
+updates that you might find in vanila SGD are massively reduced. If every update the direction along
+an axis is changing directions, then the momentum will push its update to be close to zero since 
+the oscillating updates aren't getting us anywhere meaningful. Essentially, adding momentum 
+uses the gradient history to give more weight to gradient updates that have consistently been in 
+the same direction. This improves SGD tremendously. 
+
+As a quick aside, Nesterov Momentum is a similar idea as momentum. It uses a look ahead though 
+to improve the momentum update. You can find more info \href{https://cs231n.github.io/neural-networks-3/#sgd}{here}.
+
+\subsubsection{RMSProp}
+Before I explain RMSProp (Root Mean Squared Propagation), it's important to mention Adagrad (Adaptive
+Gradient). Adagrad is a method that uses an adaptive learning rate to update our weights proposed by 
+\href{https://jmlr.org/papers/v12/duchi11a.html}{Duchi et al.}. It does so 
+by dividing our learning rate by the square root of the sum of the squared history of gradients. 
+
+\begin{verbatim}
+    cache += dx**2
+    x += - learning_rate * dx / (np.sqrt(cache) + eps)
+\end{verbatim}
+
+
+This has the effect of reducing 
+the learning rate when the gradient is large, which is good because we don't need a large learning rate
+if the gradient is already large. The problem with Adagrad (for Deep Learning) is that the factor we divide 
+our learning rate by it is monotonically increasing, meaning we can never increase the learning rate. 
+This becomes problematic for deep learning as Adagrad too often squashes our learning rate before 
+we finish learning. 
+
+An improved variant of Adagrad is RMSProp. Our dividing factor is not monotonically increasing, 
+producing a less aggressive learning rate decay. In practice this works much better. Funnily enough, 
+the citation for RMSProp isn't a research paper but instead \href{http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf}
+{lecture 6, slide 29} of Geoff Hinton's Coursera class. 
+
+\begin{verbatim}
+    cache = decay_rate * cache + (1 - decay_rate) * dx**2
+    x += - learning_rate * dx / (np.sqrt(cache) + eps)
+\end{verbatim}
+
+\subsubsection{Adam}
+Adam is the default optimization used for updating gradients. The essential idea is that it
+combines both momentum with the adaptive gradient ideas from Adagrad/RMSprop (Adagrad + Momentum 
+= Adam). Here's the code below. 
+
+\begin{verbatim}
+    m = beta1*m + (1-beta1)*dx
+    mt = m / (1-beta1**t)
+    v = beta2*v + (1-beta2)*(dx**2)
+    vt = v / (1-beta2**t)
+    x += - learning_rate * mt / (np.sqrt(vt) + eps
+\end{verbatim}
+
+I don't currently have time to dive deep into the guts of Adam to give a good explanation.
+For application purposes it's important to know that it usually includes bias correction term 
+in the beginning and that it can be worth it to compare to Nesterov Momentum. 
+
+
+\subsection{Dropout}
+
+
+
+
 
 \section{References}
+
+\begin{enumerate}
+    \item \href{https://cs231n.github.io/neural-networks-3/#sgd}{CS 231N: NN Training II}
+\end{enumerate}
 
 \end{document}
