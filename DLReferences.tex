@@ -1,0 +1,117 @@
+\documentclass[12pt]{article}
+\usepackage{lingmacros}
+\usepackage{tree-dvips}
+% hyper links
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bbm}
+% Formatting quotes properly
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
+
+\begin{document}
+\noindent Author: Benjamin Smidt
+
+\noindent Created: September 22, 2022
+
+\noindent Last Updated: September 22, 2022
+\begin{center}
+\section*{Deep Learning Resources}
+\end{center}
+
+\tableofcontents{}
+
+\section{General}
+\begin{enumerate}
+    \item “Training Neural Networks I.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-1/#intro}{Stanford University, 2022}.
+    [\emph{Modeling a Neuron, Activation Functions, ReLU}]
+\end{enumerate}
+
+\section{Data Preprocessing}
+\begin{enumerate}
+    \item “Training Neural Networks II.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-2/#datapre}{Stanford University, 2022}. 
+    [\emph{Mean Subtraction, Normalization, PCA and Whitening}]
+\end{enumerate}
+
+\subsection{Weight Initialization}
+\begin{enumerate}
+    \item “Training Neural Networks II.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-2/#init}{Stanford University, 2022}. 
+    [\emph{Pitfalls All Zero, Small Random Numbers, Calibrating Variances, 
+    Batch Normalization}]
+\end{enumerate}
+
+\section{Loss Functions}
+\begin{enumerate}
+    \item “Training Neural Networks I.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-2/#losses}{Stanford University, 2022}.
+    [\emph{Problem of Large Number of Classes, Attribute Classification, 
+    Regression v. Classification}]
+\end{enumerate}
+
+\section{Architectures}
+\begin{enumerate}
+    \item “Training Neural Networks I.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-1/#nn}{Stanford University, 2022}.
+    [\emph{Layer-Wise Organization, Naming Conventions, Ex. Feed-forward, 
+    Representational Power, Capacity}]
+\end{enumerate}
+
+\section{Hyperparameters}
+\subsection{Update Rules}
+\begin{enumerate}
+    \item “Training Neural Networks III.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-3/#update}{Stanford University, 2022}. 
+    [\emph{SGD, Momentum, Nesterov Momentum, Adagrad, RMSprop, Adam}]
+
+    \item Diederik Kingma and Jimmy Ba, 
+    "Adam: A Method for Stochastic Optimization", 
+    \href{https://arxiv.org/abs/1412.6980}{ICLR 2015}
+    [\emph{Original Adam Paper}]
+\end{enumerate}
+
+\subsection{Regularization}
+\begin{enumerate}
+    \item “Training Neural Networks II.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-2/#reg}{Stanford University, 2022}. 
+    [\emph{L2, L1, Max Norm Constraints}]
+\end{enumerate}
+
+\subsection{Dropout}
+\begin{enumerate}
+    \item “Training Neural Networks II.” 
+    CS231N Convolutional Neural Networks for Visual Recognition, 
+    \href{https://cs231n.github.io/neural-networks-2/#reg}{Stanford University, 2022}. 
+    [\emph{Dropout, Inverted Dropout, Code Implementation}]
+
+    \item Srivastava et al. "Dropout: A Simple Way to Prevent Neural Networks 
+    from Overfitting." 
+    \href{http://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf}
+    {University of Toronto, 2014}
+
+    \item Hinton, Geoffrey E. et al. “Improving neural networks 
+    by preventing co-adaptation of feature detectors.” 
+    \href{https://arxiv.org/abs/1207.0580}{ArXiv, 2012}.
+\end{enumerate}
+
+\section{Hardware and Software}
+\begin{enumerate}
+    \item Chadha, Amani. “CS231N Deep Learning Hardware and Software.” 
+    \href{https://aman.ai/cs231n/deeplearning-HW-SW/}
+    {Aman's AI Journal, 2020}.
+\end{enumerate}
+
+\end{document}
