@@ -18,7 +18,7 @@
 
 \noindent Created: September 19, 2022
 
-\noindent Last Updated: September 19, 2022
+\noindent Last Updated: September 23, 2022
 \begin{center}
 \section*{Assignment 2: Full Connected Networks}
 \end{center}
@@ -36,7 +36,9 @@ of Neural Networks. If there's a typo or a correction needs to be made, feel fre
 email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
 document helpful.
 
+\newpage
 \tableofcontents{}
+\newpage
 
 \section{Functions}
 
@@ -347,15 +349,58 @@ in the beginning and that it can be worth it to compare to Nesterov Momentum.
 
 
 \subsection{Dropout}
-Finally, the last section. 
+Finally, the last section. As in the last sections regarding update rules, I don't have the time 
+to become an expert to explain this stuff but I can give the general gist. It's worth noting though
+that topics such as dropout are still currently being explored and we don't yet fully understand 
+why it works. 
+
+Dropout is a technique that aims to limit a model from overfitting. We want our deep learning network
+to learn from out training network but not learn its unique attributes such that it doesn't perform 
+well on new data. A few methods have been introduced to prevent overfitting: regularization and smaller
+models (less capacity and/or less depth). However, we know larger networks tend to perform better. Dropout allows us 
+to take advantage of the larger capacity and/or depth of a network but stills preventing overfitting. Thus,
+we get better predictions from our larger network without worrying about overfitting the data. 
+
+The technique is simple. During each pass through the network we randomly choose (with some probability
+$p$) nodes in each layer and set them to zero. This effectively doesn't allow the network to learn from 
+those nodes for that particular batch, leaving the network to find more paths to come to the same solution.
+Since the network can't hyperoptimize any particular node or path for a given input, we force it 
+generalize the weights more which prevents overfitting. 
+
+\begin{verbatim}
+    Dropout.forward()
+        dropout_mask = (torch.rand(x.shape) > p) / p
+        x = x * mask
+
+    Dropout.backward()
+        dx = dout * dropout_mask
+\end{verbatim}
 
 
+There are some technicalities when performing dropout. We don't perform dropout at test time since we 
+want the whole network available for new predictions. However, this can create some slight differences 
+in the expected output of the network. The expected output of a given node during training is 
+$px$ since we trained it on $px + (1-p)0$. The $1-p$ is our dropout rate, which corresponds to us 
+setting the node to zero (so the expected value of that term is zero). During test time though, our 
+expected value is p. 
+
+This is problematic. We need our test and train outputs to have the same expected value. The solution? 
+A fancy term called "inverted dropout" which is super simple. During training, we
+divide our node value by probability $p$. This scales up the expected output back to $x$ since 
+$\frac{px + (1-p)0}{p} = x$. And yeah, that's pretty much all I have for dropout. 
+
+One last thing is that if you take a look at my script, droput doesn't perform that well using adam 
+but performs well (or better at least) with SGD+Momentum. Actually, the validation accuracy as a 
+whole performs considerably better with SGD+Momentum. But relative to the other two parameters, dropout
+performs worse with adam and better with SGD+Momentum. I'm trying to trouble shoot why this is the case, 
+something could be wrong with my adam optimizer. Regardless though, it was worth noting. 
 
 
 \section{References}
 
 \begin{enumerate}
-    \item \href{https://cs231n.github.io/neural-networks-3/#sgd}{CS 231N: NN Training II}
+    \item \href{https://cs231n.github.io/neural-networks-2}{CS 231N: NN Training II}
+    \item \href{https://cs231n.github.io/neural-networks-3}{CS 231N: NN Training III}
 \end{enumerate}
 
 \end{document}
