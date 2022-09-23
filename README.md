@@ -17,6 +17,9 @@ Course slides and lecture notes can be found [here](https://web.eecs.umich.edu/~
 ## Assignments
 Assignment instructions are embedded in the provided notebook for each assignment. Along with each notebook is a python script that does the heavy lifting for the notebook. There's also an accompanying pdf I wrote using LaTeX explaining the mathematics, my thought process, overarching concepts, etc. So, to be clear, assignment instructions and solutions are in the same notebook (in this repo) which contains a python script as well (same name), and a pdf (same name). There are a total of 6 assignments (with sub-assignments and subparts), each of which are a directory (1st Assignment = "A1", 2nd = "A2", etc.). 
 
+*Short update: I just realized the links in my pdfs do not work in GitHub's pdf preview. I am trying to fix it but you may just have to download the pdf 
+to click a given link. 
+
 If you want to see the assignments without my code (eg. you want to do it yourself!), they can be found at the [course website](https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/)
 
 All coding assignments are programmed using Google Colab and PyTorch. 
