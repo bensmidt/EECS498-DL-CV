@@ -27,13 +27,15 @@ All coding assignments are programmed using Google Colab and PyTorch.
 
 # Assignment 2
    1. Linear Classifiers: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py)
-   - [Support Vector Machines Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf)
-   - [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
+      - [Support Vector Machines Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf)
+      - [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
    2. Two Layer Neural Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
-   - [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
+      - [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
    3. MNIST Challenge Problem: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/challenge_problem.ipynb)
   
 # Assignment 3
+  1. Fully Connected Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.py)
+      - [Fully Connected Networks Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/A3-Fully-Connected.pdf)
 
 # Assignment 4
 
