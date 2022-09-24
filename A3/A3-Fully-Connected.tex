@@ -20,7 +20,7 @@
 
 \noindent Last Updated: September 23, 2022
 \begin{center}
-\section*{Assignment 2: Full Connected Networks}
+\section*{Assignment 3: Full Connected Networks}
 \end{center}
 
 \paragraph{} \emph{Note to reader.} 
@@ -40,7 +40,7 @@ document helpful.
 \tableofcontents{}
 \newpage
 
-\section{Functions}
+\section{Gradient and Loss Functions}
 
 \subsection{Linear.Forward}
 The \emph{Forward} function, implemented in the \emph{Linear} class is simple. We aren't doing 
@@ -213,6 +213,8 @@ all the values of both gradients we need. We simply alter the correct score
 indices by subtracting 1 and finish by dividing by N since, again, we average the loss 
 over N examples. 
 
+\section{End-to-End Neural Networks}
+
 \subsection{TwoLayerNet Class}
 
 \subsubsection{Initialization}
@@ -281,8 +283,8 @@ two layer network. The last layer (first computation) must be done first since i
 layer using \emph{Linear} while the rest can be computed in our for-loop using \emph{Linear-ReLU}. 
 As a reminder, don't forget the regularization (I'm bad about that :( ). 
 
-\subsection{Update Rules}
-\subsubsection{SGD + Momentum}
+\section{Update Rules and Regularization}
+\subsection{SGD + Momentum}
 
 Physics. Everything always comes back to physics. This idea is simply yet very powerful.
 To improve stochastic gradient descent (SGD), we can add "momentum", a fancy word for saying: the
@@ -301,7 +303,7 @@ the same direction. This improves SGD tremendously.
 As a quick aside, Nesterov Momentum is a similar idea as momentum. It uses a look ahead though 
 to improve the momentum update. You can find more info \href{https://cs231n.github.io/neural-networks-3/#sgd}{here}.
 
-\subsubsection{RMSProp}
+\subsection{RMSProp}
 Before I explain RMSProp (Root Mean Squared Propagation), it's important to mention Adagrad (Adaptive
 Gradient). Adagrad is a method that uses an adaptive learning rate to update our weights proposed by 
 \href{https://jmlr.org/papers/v12/duchi11a.html}{Duchi et al.}. It does so 
@@ -330,7 +332,7 @@ the citation for RMSProp isn't a research paper but instead \href{http://www.cs.
     x += - learning_rate * dx / (np.sqrt(cache) + eps)
 \end{verbatim}
 
-\subsubsection{Adam}
+\subsection{Adam}
 Adam is the default optimization used for updating gradients. The essential idea is that it
 combines both momentum with the adaptive gradient ideas from Adagrad/RMSprop (Adagrad + Momentum 
 = Adam). Here's the code below. 
