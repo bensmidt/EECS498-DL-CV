@@ -10,11 +10,11 @@ You can find out more about me at my [LinkedIn](https://www.linkedin.com/in/benj
 
 Last thing, big thank you to Michigan for making these lectures and course material publically available! I've really enjoyed this course (Justin Johnson is a great professor) and it's been immensely helpful in learning deep learning!
 
-## Lecture Notes
+# Lecture Notes
 
 Course slides and lecture notes can be found [here](https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/schedule.html) by clicking on the top link (slides) or the bottom link (notes) for a given lecture. Note that lecture 1 does not have any lecture notes. 
 
-## Assignments
+# Assignments
 Assignment instructions are embedded in the provided notebook for each assignment. Along with each notebook is a python script that does the heavy lifting for the notebook. There's also an accompanying pdf I wrote using LaTeX explaining the mathematics, my thought process, overarching concepts, etc. So, to be clear, assignment instructions and solutions are in the same notebook (in this repo) which contains a python script as well (same name), and a pdf (same name). There are a total of 6 assignments (with sub-assignments and subparts), each of which are a directory (1st Assignment = "A1", 2nd = "A2", etc.). 
 
 *Short update: I just realized the links in my pdfs do not work in GitHub's pdf preview. I am trying to fix it but you may just have to download the pdf 
@@ -24,24 +24,35 @@ If you want to see the assignments without my code (eg. you want to do it yourse
 
 All coding assignments are programmed using Google Colab and PyTorch. 
 
-# Assignment 1
-  1. PyTorch 101: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
-  2. K-Nearest Neighbors: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
+## Assignment 1
+  1. PyTorch 101
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb)
+      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
+  2. K-Nearest Neighbors 
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb)
+      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
 
-# Assignment 2
-   1. Linear Classifiers: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py)
+## Assignment 2
+   1. Linear Classifiers
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb)
+      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py)
       - [Support Vector Machines Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf)
       - [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
-   2. Two Layer Neural Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
+   2. Two Layer Neural Network
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb)
+      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
       - [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
-   3. MNIST Challenge Problem: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/challenge_problem.ipynb)
+   3. MNIST Challenge Problem 
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/challenge_problem.ipynb)
   
-# Assignment 3
-  1. Fully Connected Network: [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.ipynb), [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.py)
+## Assignment 3
+  1. Fully Connected Network: 
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.ipynb)
+      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.py)
       - [Fully Connected Networks Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/A3-Fully-Connected.pdf)
 
-# Assignment 4
+## Assignment 4
 
-# Assignment 5
+## Assignment 5
 
-# Assignment 6
+## Assignment 6
