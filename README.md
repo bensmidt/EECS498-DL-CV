@@ -1,5 +1,5 @@
 # EECS-498-DL-Computer-Vision
-My solutions to Michigan's public course [EECS 498.008: Deep Learning for Computer Vision](https://web.eecs.umich.edu/~justincj/teaching/eecs498/FA2019/schedule.html), taught by Justin Johnson (Fall 2019). Lectures are freely available on [YouTube](https://www.youtube.com/playlist?list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r).
+My solutions to Michigan's public course [EECS 498.007: Deep Learning for Computer Vision](https://web.eecs.umich.edu/~justincj/teaching/eecs498/FA2019/schedule.html), taught by Justin Johnson (Fall 2019). Lectures are freely available on [YouTube](https://www.youtube.com/playlist?list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r).
 
 Note: this course is taught by Justin Johnson, who used to teach CS 231N: Deep Learning for Computer Vision at Stanford. I was going to complete CS 231N but Michigan's version (this one) had more assignments available and is two years newer than the public version of CS 231N (2019 vs. 2017). 
 
