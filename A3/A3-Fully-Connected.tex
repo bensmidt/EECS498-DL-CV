@@ -284,6 +284,11 @@ layer using \emph{Linear} while the rest can be computed in our for-loop using \
 As a reminder, don't forget the regularization (I'm bad about that :( ). 
 
 \section{Update Rules and Regularization}
+
+Disclaimer: this section in particular was pulled from \href{https://cs231n.github.io/neural-networks-3/#sgd}
+{CS 231N: Training NN III}. I rephrase the ideas stated in these lecture notes but 
+I do so to facilitate my own understanding. These are not wholly my explanations as these gradient update 
+rules can be quite tricky to interpret. 
 \subsection{SGD + Momentum}
 
 Physics. Everything always comes back to physics. This idea is simply yet very powerful.
@@ -300,8 +305,22 @@ the oscillating updates aren't getting us anywhere meaningful. Essentially, addi
 uses the gradient history to give more weight to gradient updates that have consistently been in 
 the same direction. This improves SGD tremendously. 
 
+Let's take a look at the code to see how we actually implement momentum. 
+
+\begin{verbatim}
+    v = mu * v - learning_rate * dx 
+    x += v
+\end{verbatim}
+
+\emph{v} is our velocity and \emph{mu} is a hyperparameter usually referred to as \emph{momentum}. 
+You can see, we're adding our current gradient update to our previous velocity, scaled by our momentum. 
+Then we add our velocity to our current coordinate position for our loss function. I don't want to dive too 
+much into the interpretation of this but hopefully you can see that we're using our gradient update to 
+update our \emph{velocity}. Said differently, we constantly iterate the direction we're "already moving" 
+rather than using the gradient update as our direction for each update. 
+
 As a quick aside, Nesterov Momentum is a similar idea as momentum. It uses a look ahead though 
-to improve the momentum update. You can find more info \href{https://cs231n.github.io/neural-networks-3/#sgd}{here}.
+to try and improve the momentum update. You can find more info \href{https://cs231n.github.io/neural-networks-3/#sgd}{here}.
 
 \subsection{RMSProp}
 Before I explain RMSProp (Root Mean Squared Propagation), it's important to mention Adagrad (Adaptive
@@ -318,9 +337,9 @@ by dividing our learning rate by the square root of the sum of the squared histo
 This has the effect of reducing 
 the learning rate when the gradient is large, which is good because we don't need a large learning rate
 if the gradient is already large. The problem with Adagrad (for Deep Learning) is that the factor we divide 
-our learning rate by it is monotonically increasing, meaning we can never increase the learning rate. 
+our learning rate by it is monotonically increasing, meaning we can only ever decrease the learning rate. 
 This becomes problematic for deep learning as Adagrad too often squashes our learning rate before 
-we finish learning. 
+we finish learning. As a quick aside, \emph{eps} is a small constant to ensure we don't divide by 0. 
 
 An improved variant of Adagrad is RMSProp. Our dividing factor is not monotonically increasing, 
 producing a less aggressive learning rate decay. In practice this works much better. Funnily enough, 
@@ -331,6 +350,11 @@ the citation for RMSProp isn't a research paper but instead \href{http://www.cs.
     cache = decay_rate * cache + (1 - decay_rate) * dx**2
     x += - learning_rate * dx / (np.sqrt(cache) + eps)
 \end{verbatim}
+
+I won't expand on this much but hopefully it isn't too difficult to see that because 
+\emph{cache} is multiplied by the decay rate, \emph{cache} is not monotonically increasing. It can 
+decrease depending on the size of \emph{dx} and the decay rate, allowing for our learning 
+rate increase, particularly if the gradient update is quite small (which is what we want). 
 
 \subsection{Adam}
 Adam is the default optimization used for updating gradients. The essential idea is that it
