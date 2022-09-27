@@ -397,7 +397,10 @@ whole performs considerably better with SGD+Momentum. But relative to the other 
 performs worse with adam and better with SGD+Momentum. I'm trying to trouble shoot why this is the case, 
 something could be wrong with my adam optimizer. Regardless though, it was worth noting. 
 
-
+*Update: I found the bug that was messing with my Adam implementation (it was very silly). Anyways, the 
+results are as expected using Adam. It's interesting to note though how well Adam fit the training
+set compared to SGD+Momentum (difference of over 30 percent) despite SGD+Momentum having a slightly 
+larger training accuracy. 
 \section{References}
 
 \begin{enumerate}
