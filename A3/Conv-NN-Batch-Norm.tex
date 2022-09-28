@@ -124,13 +124,80 @@ layer followed by max pooling)
 
 \subsubsection{Initialization}
 
+Since this is our 3rd or 4th network we've built and this one isn't partcularly different from the fully 
+connected network except there's a convolutional layer at the beginning, I'll mainly focus on finding the 
+proper dimensions before and after our convolutional layer. We've already done the hard work of implementing our 
+forward pass for the loss and backpropagation in a modular design. 
+All that's needed now is to work out how to put it all together into one coherent network. 
+
+Since our architecture is Conv - ReLU - 2x2 Max Pool - Linear - ReLU - Linear - Softmax, we'll need three weight tensors
+and three bias tensors. I use "tensors" to be general (since some of these aren't matrices) but some are just regular 
+matrices. 
+
+Our first layer is our convolutional layer followed by ReLU and max pooling. We create the weight tensor $W1$ with 
+the following four dimensions: number of filters (\emph{num-filters}), number of channels (\emph{C}) in our input $X$, 
+filter height (\emph{filter-size}), and filter width (\emph{filter-size}). Note that filter height and width are generally 
+equal and this implementation actually doesn't allow them to be unequal.
+
+Since the convolution, ReLU, and max pooling are treated as "1 layer" we need to find the output shape of our 
+input after the max pooling operation (since this will be the input into the next layer). Our convolutional layer 
+preserves the input spatial size by setting \emph{padding} = (\emph{filter-size} - 1). Since our input tensor shape is 
+\emph{N} (number of examples) x \emph{C} x \emph{H} (input height) x \emph{W} (input width), it's shape after the convolution 
+input tensor will be of shape \emph{N} x \emph{num-filters} x \emph{H} x \emph{W}. ReLU will not change these dimensions at 
+all. 
+
+Now, our max pooling will not change \emph{N} or \emph{num-filters} but will change \emph{H} and \emph{W} such 
+that \emph{H-post-pool} = 1 + (\emph{H} - 2) / 2 and \emph{W-post-pool} = 1 + (\emph{H} - 2) / 2. If you recall how 
+we implemented our \emph{Linear} class, it flattens everythin after the first dimension \emph{N}. Thus, our matrix after
+post pooling, which we're multiplying by $W2$, will effectively have shape $N$ x (\emph{num-filters} $\cdot$ \emph{H-post-pool} 
+$\cdot$ \emph{W-post-pool}). Thus we need to make $W2$ have dimensions (\emph{num-filters} $\cdot$ \emph{H-post-pool} 
+$\cdot$ \emph{W-post-pool}) x \emph{hidden-dim} (dimensions of our hidden layer). 
+
+We then continue as normal with $W3$ having dimensions \emph{hidden-dim} x \emph{num-classes} to classify our output. The last 
+thing to note here is that we initialize all our weight matrices according to a normal distribution with mean 0 and 
+standard deviation equal to \emph{weight-scale}.
+
 \subsubsection{Loss}
+
+We've already done all the hard work so I'll make this short. We use three different classes for the three different layers: 
+\emph{Conv-ReLU-Pool}, \emph{Linear-ReLU}, and \emph{Linear}. These capture our entire architecture and all we must 
+do is simply pass our chain of inputs and outputs to receive our final \emph{scores} matrix at the end. From there we pass our 
+\emph{scores} matrix off to our \emph{softmax-loss} function to find our data loss. Finally, we add our regularization loss 
+as usual (don't forget this!). 
 
 \subsubsection{Gradient}
 
+Again, we've already done all the hard work. We have our gradient with respect to our \emph{scores} matrix returned 
+from our \emph{softmax-loss} function. From here we just pass it down the line through our backwards
+implementations of the classes mentioned above in the "Loss" section. We find our gradients, add
+the additional gradient for regularization and place them in our dictionary. Done :). 
+
 \subsection{Deep Convolutional Network}
+I will keep this section particularly short since it's just a generalization of the previous 
+section.
+
+\subsubsection{Initialization}
+Our architecture allows for an arbitrary number of convolutional layers that all 
+use a 3x3 filter size and preserve the spatial size of the input. For pooling we always 
+use 2x2 max pooling. As a result, we initialize all our convolutional layers with a filter 
+height of 3 and a filter weight of 3. We then just grab the number of filters specified 
+by the input user for each layer. 
+
+The number of channels for a given weight tensor will be the number of filters used in the last 
+operation. We just store this and iterate over each loop to update for the next loop. Things are 
+different for the first, where the number of channels is just equal to \emph{C} (input channel dimension),
+and the last layer, which doesn't directly take the number of channels as a dimension. Instead it 
+uses the number of channels to calculate the flattened dimension size of \emph{N} x \emph{fully-connected-dimension}. 
+
+\subsubsection{Loss and Gradient}
+Honestly, this process is similar enough to Fully Connected assignment that I feel comfortable 
+not explaining this at all really. Per usual, I'm just passing the inputs and outputs through the 
+network and checking if a given layer has max pooling or not. The final layer is just a linear 
+layer so it's outside the for loop and then we turn around and chug all the way back to the beginning. 
+Seriously nothing new going on here. 
 
 \section{Kaiming Initialization}
+
 
 \section{Batch Normalization}
 
