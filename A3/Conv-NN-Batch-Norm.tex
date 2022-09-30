@@ -36,6 +36,7 @@ of Neural Networks. If there's a typo or a correction needs to be made, feel fre
 email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
 document helpful.
 
+\newpage
 \tableofcontents{}
 
 \newpage
@@ -197,6 +198,22 @@ layer so it's outside the for loop and then we turn around and chug all the way 
 Seriously nothing new going on here. 
 
 \section{Kaiming Initialization}
+What is Kaiming initialization? Good question. Johnson's discussion of Kaiming initialization was 
+brief and the notes do not cover it at all. Although, it's a pretty simply idea at its core. 
+Kaiming initialization applies specifically to using the ReLu function and aims to "avoid the 
+reducing or magnifying of input signals exponentially". Essentially, it's often the case 
+in deep networks that inputs become distorted such that they grow or shrink exponentially 
+which becomes a real hindrance to network's ability to computationally learn. 
+
+If you want to read the derivation you can find it \href{https://arxiv.org/abs/1502.01852v1}{here}. 
+In practice, all you need to do is initialize your network as
+
+\begin{equation}
+    w_l \sim \mathcal{N}(0, \sqrt{ \frac{2}{n_l} })
+\end{equation}
+
+\noindent where $w_l$ is a weight matrix for a given layer and $n_l = k_l^2 c_l$. $k_l$ is the kernel 
+size for a convolutional layer and $c_l$ is the input channel dimensions for that layer. 
 
 
 \section{Batch Normalization}
