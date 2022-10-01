@@ -208,14 +208,214 @@ which becomes a real hindrance to network's ability to computationally learn.
 If you want to read the derivation you can find it \href{https://arxiv.org/abs/1502.01852v1}{here}. 
 In practice, all you need to do is initialize your network as
 
-\begin{equation}
+\begin{equation*}
     w_l \sim \mathcal{N}(0, \sqrt{ \frac{2}{n_l} })
-\end{equation}
+\end{equation*}
 
 \noindent where $w_l$ is a weight matrix for a given layer and $n_l = k_l^2 c_l$. $k_l$ is the kernel 
 size for a convolutional layer and $c_l$ is the input channel dimensions for that layer. 
 
 
 \section{Batch Normalization}
+
+\subsection{Conceptual Understanding}
+Finally, batch normalization. Batch normalization is one of the most useful (and
+intriguing) tactics used. As described \href{here}{https://arxiv.org/abs/1502.03167}
+in the original paper, batch normalization aims to fix "internal covariate shift". 
+Essentially, because each layer depends on the output of the previous, there's constantly 
+a change in the distribution of data being input (from the output of the previous layer). 
+
+This is an issue when learning because each gradient update is made for the entire 
+network but the latter layers' updates may not apply as well (or at all) to the newly 
+propagated outputs from the updates to earlier layers. This distributional shift 
+slows down or even stops learning entirely. To counteract this we introduce batch normalization. 
+We use the following equations to normalize a batch $B$ of input $x$ into $\hat{x}_i$, 
+the normalized batch. 
+
+\begin{equation*}
+    \mu_B = \frac{1}{m} \sum_{i=1}^m x_i
+\end{equation*}
+\begin{equation*}
+    \sigma_B^2 = \frac{1}{m} \sum_{i=1}^m (x_i - \mu_B)^2
+\end{equation*}
+\begin{equation*}
+    \hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}
+\end{equation*}
+
+
+For each training of mini-batch, we alter the data such that it has zero mean and unit variance. 
+This allows the data to see the same distribution no matter its place in the network. However, 
+there are cases where normalizing your data alters what the data can represent. The sigmoid function, 
+for example, would be mostly constrained to its linear regime between -1 and 1. This is undesirable if 
+the optimal parameters are outside of this regime. So we need some way to represent the original 
+sigmoid function fully (in technical speak we make the the "transformation inserted in the network can 
+represent the identity transform"). 
+
+To fix this we add two parameters: $\gamma$ (scale parameter) and $\beta$ (shift parameter). Note 
+that these parameters are unique to each layer. Thus, each layer where batch normalization is 
+used will (likely) have a different $\gamma$ or $\beta$. These scale and shift parameters can be 
+learned, allowing the network to learn the optimal normalization for a given layer. Instead of our 
+final output being $\hat{x}_i$, our final output is $\hat{y}_i$ where  
+
+\begin{equation*}
+    \hat{y}_i = \gamma \hat{x}_i + \beta
+\end{equation*}
+
+There is one last kink we must remember using batch normalization:test time. Obviously, we 
+want our predictions to be deterministic. No matter what other data we group with a given input, 
+we need it to give the same output. Thus, we can't normalize our test time data with 
+whatever batch we input it with because it isn't deterministic. Some fraction of the output depends 
+on the other inputs in the batch. To fix this, we normalize our test inputs using a running mean and 
+running average accrued during training. To show you what I mean concretely, 
+we add the following code to the end of each training batch. 
+
+\begin{verbatim}
+    running_mean = momentum * running_mean + (1 - momentum) * batch_mean
+    running_var = momentum * running_var + (1 - momentum) * batch_var
+\end{verbatim}
+
+The running mean and variance are updated for every single batch and stored in a dictionary to 
+be used at test time. Usually we set the momentum to 0.9.
+
+\subsection{Forward}
+Since you just need to implement what I described above, I'll keep this short and sweet. 
+Calculate the forward pass with the above equations. $\gamma, \beta, \epsilon$, the mode 
+(train or test), running mean, running variance, and momentum will all be passed into your 
+forward pass function. In the cache for our backward pass we'll need $\beta, \gamma, x, \mu, 
+\sigma, \hat{x}$, and $\epsilon$. 
+
+\subsection{Backward}
+Now we need to back propagate. Specifically we need to find the gradient of our loss function with 
+respect to $x_i$. This backpropagation in particular is especially confusing. Let's start with 
+$\hat{y}_i$. I'll put the original equation here for reference. Keep in mind that these gradients  
+are for a (single) given example $i$. 
+
+\begin{equation*}
+    \hat{y}_i = \gamma \hat{x}_i + \beta
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \hat{y}_i}{\partial \hat{x}_i} = \gamma
+\end{equation*}
+Now, we move backward to the next function. 
+
+\begin{equation*}
+    \hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \hat{x}_i}{\partial x_i} = \frac{1}{\sqrt{\sigma_B^2 + \epsilon}}
+\end{equation*}
+This is our first derivative with respect to $x_i$ but remember that $\mu_B$ and 
+$\sigma_B^2$ both depend on $x_i$ so we must find $\frac{\partial \mu_B}{\partial x_i}$ 
+and $\frac{\partial \sigma_B^2}{\partial x_i}$. If that doesn't make sense 
+to you right now just keep moving and it'll make sense here soon. We'll start with 
+finding $\frac{\partial \hat{x}_i}{\partial \sigma_B} \frac{\partial \sigma_B}{\partial x_i}$. 
+
+\begin{equation*}
+    \frac{\partial \hat{x}_i}{\partial \sigma_B^2} = 
+    \frac{x_i - \mu_B}{(-2) \sqrt[3/2]{\sigma_B^2 + \epsilon}}
+\end{equation*}
+Then 
+\begin{equation*}
+    \sigma_B^2 = \frac{1}{m} \sum_{i=1}^m (x_i - \mu_B)^2
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \sigma_B^2}{\partial x_i} = 
+    \frac{2(x_i - \mu_B)}{m}
+\end{equation*}
+This allows to complete our second derivative with respect to $x_i$. However, we also use 
+$\mu_B$ to calculate $\sigma_B^2$. Thus we must find 
+$\frac{\partial \sigma_B^2}{\partial \mu_B}$. Let's keep going. 
+
+\begin{equation*}
+    \frac{\partial \sigma_B^2}{\partial \mu_B} = 
+    \frac{-2(x_i - \mu_B)}{m}
+\end{equation*}
+Now we find $\frac{\partial \mu_B}{\partial x_i}$. 
+
+\begin{equation*}
+    \mu_B = \frac{1}{m} \sum_{i=1}^m x_i
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \mu_B}{\partial x_i} = 
+    \frac{1}{m}
+\end{equation*}
+Okay, this has been a lot so far so let's recap where we're at. We didn't talk 
+about this earlier but remember that our backpropagation is with respect to 
+our initial loss function, so we have
+
+\begin{equation*}
+    \frac{\partial l}{\partial x_i} = 
+    \frac{\partial l}{\partial \hat{y}_i} 
+    \frac{\partial \hat{y}_i} {\partial \hat{x}_i} 
+    (
+        \frac{\partial \hat{x}_i}{\partial x_i} + 
+        \frac{\partial \hat{x}_i}{\partial \sigma_B^2} 
+        (
+            \frac{\partial \sigma_B^2}{\partial x_i} + 
+            \frac{\partial \sigma_B^2}{\partial \mu_i} 
+            \frac{\partial \mu_i}{\partial x_i} 
+        ) + 
+        ???
+    )
+\end{equation*}
+where the question mark is the third split we haven't gotten to yet. Let's quickly tackle that. 
+
+\begin{equation*}
+    \hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \hat{x}_i}{\partial \mu_B} = \frac{-1}{\sqrt{\sigma_B^2 + \epsilon}}
+\end{equation*}
+Then 
+\begin{equation*}
+    \mu_B = \frac{1}{m} \sum_{i=1}^m x_i
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \mu_B}{\partial x_i} = \frac{1}{m}
+\end{equation*}
+As a result, our full backpropagation for $x_i$ is the following. 
+
+\begin{equation*}
+    \frac{\partial l}{\partial x_i} = 
+    \frac{\partial l}{\partial \hat{y}_i} 
+    \frac{\partial \hat{y}_i} {\partial \hat{x}_i} 
+    (
+        \frac{\partial \hat{x}_i}{\partial x_i} + 
+        \frac{\partial \hat{x}_i}{\partial \sigma_B^2} 
+        (
+            \frac{\partial \sigma_B^2}{\partial x_i} + 
+            \frac{\partial \sigma_B^2}{\partial \mu_i} 
+            \frac{\partial \mu_i}{\partial x_i} 
+        ) + 
+        \frac{\partial \hat{x}_i}{\partial \mu_B}
+        \frac{\partial \mu_B}{\partial x_i} 
+    )
+\end{equation*}
+We can plug this in to get our final equation for $\frac{\partial l}{\partial x_i}$. 
+
+\begin{equation*}
+    \frac{\partial l}{\partial x_i} = \frac{\partial l}{\partial \hat{y}_i} 
+    \cdot \gamma
+    (
+        \frac{1}{\sqrt{\sigma_B^2 + \epsilon}} +
+        \frac{x_i - \mu_B}{(-2) \sqrt[3/2]{\sigma_B^2 + \epsilon}}
+        (   
+            \frac{2(x_i - \mu_B)}{m} +
+            \frac{-2(x_i - \mu_B)}{m} 
+            \cdot \frac{1}{m}
+        ) + 
+        \frac{-1}{\sqrt{\sigma_B^2 + \epsilon}}
+        \cdot \frac{1}{m}
+\end{equation*}
+
+Let's do some simplification. 
+
+
+
+
+
+
+
+
 
 \end{document}
