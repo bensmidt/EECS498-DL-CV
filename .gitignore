@@ -4,3 +4,4 @@ __pycache__
 *.synctex.gz
 *.out
 *.toc
+.DS_Store
