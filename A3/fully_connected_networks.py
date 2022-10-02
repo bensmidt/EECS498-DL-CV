@@ -703,8 +703,10 @@ def adam(w, dw, config=None):
     beta2 = config['beta2']
     
     m = beta1*m + (1-beta1)*dw
+    config['m'] = m
     mt = m / (1-beta1**config['t'])
     v = beta2*v + (1-beta2)*(dw**2)
+    config['v'] = v
     vt = v / (1-beta2**config['t'])
     next_w = w - config['learning_rate'] * mt / (torch.sqrt(vt) + config['epsilon'])
     #########################################################################
