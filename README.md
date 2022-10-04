@@ -50,8 +50,16 @@ All coding assignments are programmed using Google Colab and PyTorch.
       - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.ipynb)
       - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.py)
       - [Fully Connected Networks Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/A3-Fully-Connected.pdf)
+  2. Convolutional Neural Networks and Batch Normalization: 
+      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/convolutional_networks.ipynb)
+      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/convolutional_networks.py)
+      - [CNN and Batch Norm Explanation](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/Conv-NN-Batch-Norm.pdf)
 
 ## Assignment 4
+  1. PyTorch AutoGrad: 
+  2. Image Captioning with Recurrent Neural Networks
+  3. Network Visualization
+  4. Style Transfer
 
 ## Assignment 5
 
