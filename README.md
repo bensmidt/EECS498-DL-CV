@@ -26,33 +26,33 @@ All coding assignments are programmed using Google Colab and PyTorch.
 
 ## Assignment 1
   1. PyTorch 101
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb)
-      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
+      - [pytorch101.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.ipynb)
+      - [pytorch101.py](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/pytorch101.py)
   2. K-Nearest Neighbors 
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb)
-      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
+      - [knn.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.ipynb)
+      - [knn.py](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A1/knn.py)
 
 ## Assignment 2
    1. Linear Classifiers
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb)
-      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py)
+      - [linear_classifier.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.ipynb)
+      - [linear_classifier.py](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/linear_classifier.py)
       - [Support Vector Machines Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-SVM.pdf)
       - [Softmax Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Softmax.pdf)
    2. Two Layer Neural Network
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb)
-      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
-      - [Basic NN/Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
+      - [two_layer_net.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.ipynb)
+      - [two_layer_net.py](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/two_layer_net.py)
+      - [Basic NN and Backpropagation Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/A2-Two-Layer-NN.pdf)
    3. MNIST Challenge Problem 
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/challenge_problem.ipynb)
+      - [challenge_problem.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A2/challenge_problem.ipynb)
   
 ## Assignment 3
   1. Fully Connected Network: 
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.ipynb)
-      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.py)
+      - [fully_connected_networks.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.ipynb)
+      - [fully_connected_networks.py](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/fully_connected_networks.py)
       - [Fully Connected Networks Explanation/Work](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/A3-Fully-Connected.pdf)
   2. Convolutional Neural Networks and Batch Normalization: 
-      - [Notebook](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/convolutional_networks.ipynb)
-      - [Python Script](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/convolutional_networks.py)
+      - [convolutional_networks.ipynb](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/convolutional_networks.ipynb)
+      - [convolutional_networks.py](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/convolutional_networks.py)
       - [CNN and Batch Norm Explanation](https://github.com/bensmidt/EECS-498-DL-Computer-Vision/blob/main/A3/Conv-NN-Batch-Norm.pdf)
 
 ## Assignment 4
