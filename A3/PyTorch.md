@@ -2,7 +2,7 @@
 
 *Disclaimer: much of this document is pulled directly from [CS231N: Assignment 2 PyTorch](http://cs231n.stanford.edu/schedule.html). I'm synthesizing it for my own reference and to help me remember.*
 
-This document focuses on using torch.nn to build neural networks. torch.nn has an abundant set of modules which we can think of as different layers. There are three different layers of abstraction we'll be using in PyTorch: Barebones, Module API, and Sequential API. 
+This document focuses on using `torch.nn` to build neural networks. `torch.nn` has an abundant set of modules which we can think of as different layers. There are three different layers of abstraction we'll be using in PyTorch: Barebones PyTorch, `nn.module` API, and the `nn.sequential` API. 
 
 - Barebones: 
 
@@ -26,7 +26,7 @@ This document focuses on using torch.nn to build neural networks. torch.nn has a
 
 ## Barebones PyTorch
 ### Gradients
-If a given tensor needs to be backpropagated, we create that tensor with `tensor.requires_grad == True` PyTorch then stores the gradient in an attribute of the tensor `tensor.grad`
+If a given tensor needs to be backpropagated, we create that tensor with `tensor.requires_grad == True`, PyTorch then stores the gradient in an attribute of the tensor `tensor.grad`
 
 ### Auto-Softmax
 You do not need to add your softmax activation after your last fully connected layer. PyTorch's cross entropy loss automatically does it for you. This bundling step actually makes the computation more efficient.
