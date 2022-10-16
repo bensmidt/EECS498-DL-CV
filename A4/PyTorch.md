@@ -16,22 +16,19 @@ This document focuses on using `torch.nn` to build neural networks. `torch.nn` h
 
 ## Table of Contents
 1. [Barebones Pytorch](#barebones-pytorch)
-     - [Gradients](#gradients)
-     - [Auto-Softmax](#auto-softmax)
-     - [Three Layer ConvNet](#three-layer-convnet)
 1. [PyTorch Module API](#pytorch-module-api)
 1. [PyTorch Sequential API](#pytorch-sequential-api)
 -  [ResNet Implementation](#resnet)
 -  [NN.Functional](#nnfunctional)
 
-## Barebones PyTorch
-### Gradients
+# Barebones PyTorch
+## Gradients
 If a given tensor needs to be backpropagated, we create that tensor with `tensor.requires_grad == True`, PyTorch then stores the gradient in an attribute of the tensor `tensor.grad`
 
-### Auto-Softmax
+## Auto-Softmax
 You do not need to add your softmax activation after your last fully connected layer. PyTorch's cross entropy loss automatically does it for you. This bundling step actually makes the computation more efficient.
 
-### Three Layer ConvNet
+## Three Layer ConvNet
 The following are implementations of initializing your parameters for a ConvNet as well as creating the network. I know above we said that this is inconvenient, but compared to what we've been doing in [EECS498](https://web.eecs.umich.edu/~justincj/teaching/eecs498/FA2019/schedule.html), this is amazinggg. 
 
 [NN.Conv2d](https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.conv2d)
@@ -270,7 +267,7 @@ acc_hist_part2 = train_part2(three_layer_convnet, params, learning_rate)
 Our training loop uses [nn.functional.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
 
 
-## PyTorch Module API
+# PyTorch Module API
 You can see, when using barebones PyTorch we must keep track of all the tensors by hand. This, of course, is quite error prone. We use PyTorch's Module API to make life significantly easier while still retaining flexibility. 
 
 PyTorch provides the `nn.Module` API and `torch.optim` package which implements different optimization methods such as Nesterov Momentum or Adam for us. 
@@ -513,11 +510,11 @@ model, optimizer = initialize_three_layer_conv_part3()
 acc_hist_part3, _ = train_part345(model, optimizer)
 ```
 </details>
+&nbsp;
 
 
 
-
-## PyTorch Sequential API
+# PyTorch Sequential API
 If your model is fairly simple, PyTorch provides an extremely convenient API with `nn.Sequential` that allows you to quickly define a network. 
 
 <details closed>
@@ -602,10 +599,12 @@ print(model) # printing `nn.Module` shows the architecture of the module.
 acc_hist_part4, _ = train_part345(model, optimizer)
 ```
 </details>
+&nbsp;
 
-## ResNet
+# ResNet
+&nbsp;
 
-## NN.Functional
+# NN.Functional
  - Spatial Batch Normalization: [BatchNorm2d](https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d)
  - ConvNet: [NN.Conv2d](https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.conv2d)
  - 
