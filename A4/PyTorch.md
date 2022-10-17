@@ -601,7 +601,128 @@ acc_hist_part4, _ = train_part345(model, optimizer)
 </details>
 &nbsp;
 
-# ResNet
+# PreResNet
+The following code implements [PreResNet](https://arxiv.org/abs/1603.05027) using PyTorch's API. 
+
+<details close>
+<summary> Plain Block </summary>
+
+```python
+class PlainBlock(nn.Module):
+  def __init__(self, Cin, Cout, downsample=False):
+    super().__init__()
+
+    self.net = None
+    ############################################################################
+    # TODO: Implement PlainBlock.                                             
+    # Hint: Wrap your layers by nn.Sequential() to output a single module.     
+    #       You don't have use OrderedDict.                                    
+    # Inputs:                                                                  
+    # - Cin: number of input channels                                          
+    # - Cout: number of output channels                                        
+    # - downsample: add downsampling (a conv with stride=2) if True            
+    # Store the result in self.net.                                            
+    ############################################################################
+    stride = 1
+    if downsample: 
+      stride = 2
+
+    self.net = nn.Sequential(nn.BatchNorm2d(Cin),
+                          nn.ReLU(), 
+                          nn.Conv2d(Cin, Cout, 3, stride, padding=1), 
+                          nn.BatchNorm2d(Cout),
+                          nn.ReLU(), 
+                          nn.Conv2d(Cout, Cout, 3, padding=1)
+    )
+    ############################################################################
+    #                                 END OF YOUR CODE                         #
+    ############################################################################
+
+  def forward(self, x):
+    return self.net(x)
+```
+</details>
+
+<details close>
+<summary> Residual Block </summary>
+
+```python
+class ResidualBlock(nn.Module):
+  def __init__(self, Cin, Cout, downsample=False):
+    super().__init__()
+
+    self.block = None # F
+    self.shortcut = None # G
+    ############################################################################
+    # TODO: Implement residual block using plain block. Hint: nn.Identity()    #
+    # Inputs:                                                                  #
+    # - Cin: number of input channels                                          #
+    # - Cout: number of output channels                                        #
+    # - downsample: add downsampling (a conv with stride=2) if True            #
+    # Store the main block in self.block and the shortcut in self.shortcut.    #
+    ############################################################################
+    self.block = PlainBlock(Cin, Cout, downsample)
+
+    if downsample:
+      self.shortcut = nn.Conv2d(Cin, Cout, 1, stride=2)
+    elif Cin == Cout: # no downsample
+      self.shortcut = nn.Identity()
+    else: # no downsample
+      self.shortcut = nn.Conv2d(Cin, Cout, 1, stride=1)
+    ############################################################################
+    #                                 END OF YOUR CODE                         #
+    ############################################################################
+  
+  def forward(self, x):
+    print(self.block(x).shape)
+    print(self.shortcut(x).shape)
+    return self.block(x) + self.shortcut(x)
+```
+</details>
+
+<details close>
+<summary> ResNetStage (defines macro layer from micro layers) </summary>
+
+```python
+class ResNetStage(nn.Module):
+  def __init__(self, Cin, Cout, num_blocks, downsample=True,
+               block=ResidualBlock):
+    super().__init__()
+    blocks = [block(Cin, Cout, downsample)]
+    for _ in range(num_blocks - 1):
+      blocks.append(block(Cout, Cout))
+    self.net = nn.Sequential(*blocks)
+
+  def forward(self, x):
+    return self.net(x)
+```
+</details>
+
+<details close>
+<summary> Residual Stem (beginning of network needed to increase # of channels)</summary>
+
+```python
+class ResNetStem(nn.Module):
+  def __init__(self, Cin=3, Cout=8):
+    super().__init__()
+    layers = [
+        nn.Conv2d(Cin, Cout, kernel_size=3, padding=1, stride=1),
+        nn.ReLU(),
+    ]
+    self.net = nn.Sequential(*layers)
+
+  def forward(self, x):
+    return self.net(x)
+```
+</details>
+
+<details close>
+<summary> Plain Block </summary>
+
+```python
+
+```
+</details>
 &nbsp;
 
 # NN.Functional
