@@ -1,0 +1,149 @@
+\documentclass[12pt]{article}
+\usepackage{lingmacros}
+\usepackage{tree-dvips}
+% hyper links
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bbm}
+% Formatting quotes properly
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
+
+\begin{document}
+\noindent Author: Benjamin Smidt
+
+\noindent Created: October 18th, 2022
+
+\noindent Last Updated: October 18th, 2022
+\begin{center}
+\section*{Assignment 4: RNNs, LSTM, and Attention with Image Captioning}
+\end{center}
+
+\paragraph{} \emph{Note to reader.} 
+
+This is my work for assignment four (A4) of Michigan's course
+\href{https://web.eecs.umich.edu/~justincj/teaching/eecs498/WI2022/}
+{EECS 498: Deep Learning for Computer Vision}. The majority of explanations and understanding are 
+derived from \href{https://www.youtube.com/watch?v=dJYGatp4SvA&list=PL5-TkQAfAZFbzxjBHtzdVCWE0Zbhomg7r&index=1}
+{Justin Johnson's Lectures} and \href{http://cs231n.stanford.edu/schedule.html}{Stanford's CS 231N Lecture Notes}.
+This document is meant to be used as a reference, 
+explanation, and resource for the assignment, not necessarily a comprehensive overview
+of Neural Networks. If there's a typo or a correction needs to be made, feel free to 
+email me at benjamin.smidt@utexas.edu so I can fix it. Thank you! I hope you find this 
+document helpful.
+
+\tableofcontents{}
+
+\newpage
+
+\section{Vanilla Recurrent Neural Networks}
+
+\subsection{RNN Forward}
+Recurrent neural networks are very powerful in their ability to process and output 
+variable length data. Said another way, RNNs can be fed different length inputs as 
+well predict different length outputs making them a powerful and useful paradigm in 
+many applications. We'll go into more depth as we go along but for now we'll start 
+with vanilla recurrent neural networks. 
+\begin{equation*}
+    h_t = f_w (h_{t-1}, x_t)
+\end{equation*}
+To achieve variable length inputs and outputs we need to change our neural network 
+model a bit. Instead of having some predefined network size, we have a function that
+takes two inputs: the output of the previous computation (also known as the "hidden state")
+and some data input (usually interpreted as a sequence). 
+See \href{https://www.google.com/search?q=recurrent+neural+network&sxsrf=ALiCzsaznqUkAxJ_FZnLauL7_6Z3AD132g:1666096199658&source=lnms&tbm=isch&sa=X&ved=2ahUKEwizlpGB5On6AhVtmWoFHfgSCc0Q_AUoAXoECAIQAw&biw=1496&bih=1138&dpr=1.13#imgrc=iC7Ot7uyj4lzoM}
+{this picture} for a visual. For vanilla neural networks (also known as "Elman RNNs") 
+we use the following function. 
+\begin{equation}
+    h_t = tanh(W_{hh}h_{t-1} + W_{xh}x_t + b)
+\end{equation}
+where $h_t$ is the current state, $x_t$ is the input data, $W_{hh}$ is our (reused) 
+weight matrix for the hidden state input, and $W_{xh}$ is our (reused) weight 
+matrix for the current input $x_t$. We also add a bias $b$. To be clear, $W_{hh}$ and 
+$W_{xh}$ do not change at all beween time steps. They are the same set of parameters 
+throughout the neural network's computation. For out first function, \emph{rnn-forward}, 
+we simply write down Eq. (1) in code and store our needed variables in \emph{cache} 
+for backpropagation. 
+
+If you're wondering about initialization and how to know when to stop computing $h_t$, 
+keep reading. I'll answer those and other questions as we go along. 
+
+\subsection{RNN Backward}
+Let's look at backpropagating a given time step given our function. Recall that 
+\begin{equation*}
+    tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}
+\end{equation*}
+Thus, by quotient rule, our derivative is as follows
+\begin{equation*}
+    \frac{\partial \; tanh(z)}{\partial z} = 
+    \frac{(e^z + e^{-z})(e^z + e^{-z}) 
+    - (e^z - e^{-z})(e^z - e^{-z})}
+    {(e^z + e^{-z})^2}
+\end{equation*} \begin{equation*}
+    \frac{\partial \; tanh(z)}{\partial z} = 
+    \frac{(e^z + e^{-z})^2 - (e^z - e^{-z})^2}
+    {(e^z + e^{-z})^2}
+\end{equation*} \begin{equation*}
+    \frac{\partial \; tanh(z)}{\partial z} = 
+    \frac{(e^z + e^{-z})^2}
+    {(e^z + e^{-z})^2} -
+    \frac{(e^z - e^{-z})^2}
+    {(e^z + e^{-z})^2}
+\end{equation*}\begin{equation*}
+    \frac{\partial \; tanh(z)}{\partial z} = 
+    1 - tanh^2(z)
+\end{equation*} 
+If we set $z = W_{hh}h_{t-1} + W_{xh}x_t + b$, we get the first term in our backpropagation.
+Moving forward (or backward I guess) in our backpropagation, we'll next work 
+on each of the variables inside the $tanh$ function starting with $W_{hh}$ and 
+$W_{xh}$. 
+\begin{equation*}
+    \frac{\partial \; z}{\partial W_{hh}} = h_{t-1} \; \; \; \text{and} \; \; \;
+    \frac{\partial \; z}{\partial W_{xh}} = x_t
+\end{equation*}
+Thus 
+\begin{equation*}
+    \frac{\partial \; h_t}{\partial z} \frac{\partial \; z}{\partial W_{hh}} = 
+    h_{t-1}^T \; [1 - tanh^2(z)] 
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \; h_t}{\partial z} \frac{\partial \; z}{\partial W_{xh}} = 
+    x_t^T [1 - tanh^2(z)]
+\end{equation*}
+where $z = W_{hh}h_{t-1} + W_{xh}x_t + b$ and the transposes are derived by the shape 
+convention. Next we have $h_{t-1}$ and $x_t$. 
+\begin{equation*}
+    \frac{\partial \; z}{\partial h_{t-1}} = W_{hh} \; \; \; \text{and} \; \; \;
+    \frac{\partial \; z}{\partial x_t} = W_{xh}
+\end{equation*}
+Thus 
+\begin{equation*}
+    \frac{\partial \; h_t}{\partial z} \frac{\partial \; z}{\partial h_{t-1}} = 
+    [1 - tanh^2(z)] \; W_{hh}^T 
+\end{equation*}
+\begin{equation*}
+    \frac{\partial \; h_t}{\partial z} \frac{\partial \; z}{\partial x_t} = 
+    [1 - tanh^2(z)] \; W_{xh}^T 
+\end{equation*}
+And finally for our bias 
+\begin{equation*}
+    \frac{\partial \; z}{\partial b} = 1
+\end{equation*} \begin{equation*}
+    \frac{\partial \; h_t}{\partial z} \frac{\partial \; z}{\partial b} = 
+    [1 - tanh^2(z)] 
+\end{equation*}
+Of course, we'll have to manipulate the bias $b$ more when we program the backpropagation 
+since $b$ is actually broadcast over the the outputs which needs to be accounted for 
+in our backpropagation. 
+
+
+
+
+
+
+
+\end{document}
