@@ -97,7 +97,18 @@ Thus, by quotient rule, our derivative is as follows
     \frac{\partial \; tanh(z)}{\partial z} = 
     1 - tanh^2(z)
 \end{equation*} 
-If we set $z = W_{hh}h_{t-1} + W_{xh}x_t + b$, we get the first term in our backpropagation.
+If we set $z = W_{hh}h_{t-1} + W_{xh}x_t + b$, we can get the first term in our backpropagation.
+I'll write our original function here as well for clarity. 
+\begin{equation}
+    h_t = tanh(z)
+\end{equation}
+\begin{equation*}
+    \frac{\partial loss}{\partial z} = 
+    \frac{\partial loss\; z}{\partial h_t} \odot
+    (1 - tanh^2(z))
+\end{equation*} 
+Where $\frac{\partial loss\; z}{\partial h_t}$ is passed down to us from some function upstream 
+and $\odot$ indicates elementwise multiplication (work out the shapes!). 
 Moving forward (or backward I guess) in our backpropagation, we'll next work 
 on each of the variables inside the $tanh$ function starting with $W_{hh}$ and 
 $W_{xh}$. 
@@ -138,7 +149,65 @@ And finally for our bias
 \end{equation*}
 Of course, we'll have to manipulate the bias $b$ more when we program the backpropagation 
 since $b$ is actually broadcast over the the outputs which needs to be accounted for 
-in our backpropagation. 
+in our backpropagation (we sum over the rows, which is dimension 0). 
+
+\subsection{RNN Forward}
+This is where some of our initial questions need some answers. 
+~\\
+~\\
+How do we initialize the network? 
+(i.e. where does the first $h_{t-1}$ come from?). We simply initialize it as a separate matrix 
+and make it a learnable parameter of the network. 
+~\\
+~\\
+When do we stop our recursive calls to $f_w$? When the input sequence has run out. For instance, 
+given $T$ time steps for a set of data, we recursively compute $f_w$ until we get to the 
+last time step where we throw in the towel and compute our loss function. 
+~\\
+~\\
+Speaking of loss functions, how is it computed? Well, because recurrent neural networks 
+are very malleable, how you compute the loss depends on the type of recurrent 
+neural network you use. I really like the visuals shown on \href{https://calvinfeng.gitbook.io/machine-learning-notebook/supervised-learning/recurrent-neural-network/recurrent_neural_networks}
+{this website}. Our network is a one to many relationship, meaning we have a loss computed 
+for each hidden state $h_i$. Thus, we must compute the gradient with respect to the loss 
+produced by the current state $h_i$ as well as with respect to all the downstream 
+states $h_d > h_i$. This sounds more difficult than it really is in practice. 
+~\\
+~\\
+This forward function isn't really anything new to use so I'll leave you to just read the code in
+the notebook. The only detail to note is that I chose to transpose the input $x$ (shape $N$ x $T$ x $D$)
+for computing the forward pass to make the computation more clear. This led me to have to take 
+the transpose of the output $h$ (tensor of hidden states with shape $N$ x $T$ x $H$). 
+
+\subsection{RNN Backward}
+As I briefly mentioned above, computing the gradient for any given time step is
+a little more complicated than what we're used to. It's really not much different
+though if you're used to computing gradients already. First, see 
+\href{https://calvinfeng.gitbook.io/machine-learning-notebook/supervised-learning/recurrent-neural-network/recurrent_neural_networks}
+{this website} for a picture of what a \emph{one-to-many} relationship looks like 
+for recurrent neural networks. 
+~\\
+~\\
+In a one-to-many RNN, a loss function is computed for each time step. Thus, the loss 
+computed for a given time step depends on all the time steps before it. This means, 
+for a given time step, our gradient depends on the loss computed at that time step 
+as well as the loss computed for all the time steps after it. 
+~\\
+~\\
+In practice this isn't too difficult. The time step $h_{t + 1}$ will pass back some 
+gradient to time step $h_t$. Since this gradient is passed back from every time 
+step ahead of $h_t$, it embeds all the gradient with respect to all the loss functions 
+after $h_t$ (so excluding the loss function calculated on time step $h_t$. Thus, 
+we simply add the gradient passed back from $h_{t+1}$ and the gradient with respect 
+to the loss function computed at $h_t$ and pass this value to our 
+\emph{rnn-step-backward} function. And that's it! 
+~\\
+~\\
+Again, the details here are pretty simply once you understand the high level 
+concept so I won't explain the code. We're just backpropagating like normal 
+with a couple extra steps added in between. 
+
+
 
 
 
