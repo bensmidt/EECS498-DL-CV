@@ -207,9 +207,12 @@ Again, the details here are pretty simply once you understand the high level
 concept so I won't explain the code. We're just backpropagating like normal 
 with a couple extra steps added in between. 
 
+\section{RNN for Image Captioning}
 
-
-
+Initially we implement some functions that we need to do our image captioning. Namely, 
+we look at MobileNet v2 architecture, create vectors for our word embeddings, and 
+look at a temporal affine layer. The first interesting oneto me was the temporal softmax 
+loss, which computes the loss at every time step for all the vocabulary and sums them. 
 
 
 
