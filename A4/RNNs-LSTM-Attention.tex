@@ -324,8 +324,8 @@ it well. What is it? It's a little complicated at first but we'll take step by s
 ~\\
 First, in addition to having a hidden state at a given time step $h_t$, we have a cell state 
 $c_t$. The hidden state and cell state are the same dimension, in particular $N$ x $H$. Our 
-weight matrices $W_{xh}$ and $W_{hh}$ are different from previously though. Instead of shape 
-$H$ x $D$ for $W_{xh}$ and $H$ x $H$ for $W_{hh}$, we'll use $4H$ x $D$ for $W_{xh}$ 
+weight matrices $W_{xh}$ and $W_{hh}$ are different from previously though. We'll use 
+$4H$ x $D$ for $W_{xh}$ 
 and $4H$ x $H$ for $W_{hh}$. We then use 
 \begin{equation*}
     a = W_{xh}x_t + W_{hh} h_{t-1} + b
