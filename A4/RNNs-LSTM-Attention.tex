@@ -18,7 +18,7 @@
 
 \noindent Created: October 18th, 2022
 
-\noindent Last Updated: October 18th, 2022
+\noindent Last Updated: October 23rd, 2022
 \begin{center}
 \section*{Assignment 4: RNNs, LSTM, and Attention with Image Captioning}
 \end{center}
@@ -211,10 +211,139 @@ with a couple extra steps added in between.
 
 Initially we implement some functions that we need to do our image captioning. Namely, 
 we look at MobileNet v2 architecture, create vectors for our word embeddings, and 
-look at a temporal affine layer. The first interesting oneto me was the temporal softmax 
-loss, which computes the loss at every time step for all the vocabulary and sums them. 
+look at a temporal affine layer. I'm not going go over these because they're pretty 
+straightforward and we can just use PyTorch's API's for a lot of it to make things 
+simple. 
 
+\subsection{RNN Captioning Forward}
 
+\subsubsection{Overview}
+This architecture was a little confusing to me at first I'm not going to lie. However, 
+it makes perfect sense once I went through it step by step. Let's do that. 
+~\\
+~\\
+Remember that we're given an image and associated captions for a given number of examples. 
+Our job is to use this data to train a network such that, if we only fed it an input 
+picture, it would give us a caption. To do this we're using a many-to-many RNN architecture. 
+Our initial state is a feature vector extracted from our image, 
+and each time step is fed the vector representation of the previous word. Then, at each time 
+step, it predicts the next word which we compute softmax loss on and use for backpropagation. 
+
+\subsubsection{Input Image Feature Vector}
+There are quite a few operational details here but that's the big picture. Let's start with extracting 
+our feature vector from our input image. We'll use the \emph{FeatureExtractor} class
+(implemented for us) to do this. What this class does is use the MobileNet v2 model 
+to extract the features for us (as opposed to training a whole neural network for this 
+purpose only). 
+~\\
+~\\
+We'll adjust the network a little bit by chopping off the last two layers 
+(FC-1000 and softmax) leaving us with a feature tensor of 1280 x 4 x 4 as the output. We'll then use 
+average pooling on dimensions 1 and 2 to get our feature vector of length 1280. Before we 
+talk about how we input this into our RNN, let's quickly review our RNN architecture. 
+~\\
+~\\
+Each step of our RNN takes two inputs: the previous hidden state $h_t$ and the current 
+input $x_t$. We use $h_{t+1} = tanh(W_{hh}h_{t} + W_{xh}x + b)$ where $W_{hh}$ and $W_{xh}$ 
+are the same matrix for all time steps. The output, $h_{t+1}$, is then fed into the next 
+step along with the next input $x_t+1$. In our case, each $x$ is a vector representation of 
+a word. 
+~\\
+~\\
+Staying on topic though let's look at some shapes. $x$ will be an $N$ x $W$ dimensional tensor 
+where $N$ is the number of examples in our current batch and $W$ is the length of our vector 
+representations of a given word (so we have $N$ words represented each as vectors of length $W$). 
+A given $h_t$ will be of shape $N$ x $H$ where $H$ is the vector length we choose to represent 
+a given state for a given example. 
+~\\
+~\\
+Okay, so back to our input feature vector of length 1280. Remember, because we always do training 
+in batches, we'll have $N$ input feature vectors of length 1280. Thus, if we tried to use 
+this as our current input as $h_0$ it wouldn't work because we're trying to input a tensor of 
+shape $N$ x 1280 which isn't the same shape as our general hidden state $h_t$ of $N$ x $H$ (I mean, guess it could be 
+but it isn't for our implementation). 
+~\\
+~\\
+Thus, we use an affine (linear) transformation (matrix 
+multiplication) to convert it to the shape we want. In particulary, we multiply our feature 
+tensor of shape $N$ x 1280 by our affine transformation tensor (matrix) of shape 1280 x $H$ 
+to get our initial state $h_0$ of shape $N$ x $H$. This affine transformation matrix is a 
+learnable part of our network meaning we will perform backprop on it (although we let PyTorch 
+do that for us this assignment). 
+
+\subsubsection{RNN, Loss, and Backprop}
+I'm not going to go super in depth on the details since I already explained them 
+above when implementing the loss and backpropagation for RNNs, but there are some 
+things I need to clear up. First, I've stated before, each time step is associated with a 
+predicted next word given the previous hidden state and the previous word (represented 
+by a vector). How does this work exactly though? 
+~\\
+~\\
+Well, we again use an affine transformation to turn a given example's hidden vector of 
+length $H$ into a hidden vector of length $N$. That is, we matrix multiply the vector by 
+a matrix of shape $H$ x $V$ where $V$ is the length of our vocabulary (more on this in a 
+second). Thus, a given time step $h_t$ with $N$ hidden vectors can be matrix multiplied 
+to produce a \emph{score} tensor of shape $N$ x $V$ ($N$ x $H$ @ $H$ x $V$). 
+~\\
+~\\
+Next, we can compute our softmax loss function on each example (so the $V$ dimension, 
+dimension 1 in this case) using the ground truth labels of what the next word should 
+actually be. This is done for every time step in our RNN. Thus, our backpropagation needs
+to include the loss function at the current time step and all the time steps after it 
+for a given time step $h_t$ (as discussed in the previous section, the idea is the exact 
+same). 
+~\\
+~\\
+Also, please note that the affine function used to transform $h_t$ into our scores tensor 
+is another learnable parameter of the network (meaning we again do backpropagation on it). 
+It is the same function used at every time step though, similar to $W_{hh}$ and $W_{xh}$. 
+
+\subsubsection{Word Embeddings}
+That last part, that I've kind of beat around the bush, is our word embeddings. This part
+isn't very difficult to understand but I do want to make sure it's clear. Essentially, 
+the best method to represent words (so far) is using vectors. In our case, a vector of 
+length $W$ represents a single word. I won't get into why this is the case or how we come 
+up with those vectors. 
+~\\
+~\\
+For this assignment, the vector representations don't actually mean anything. They're just 
+unique identifiers for words. Typically though, word vectors \emph{do} have meaning associated 
+with them. The numbers in the vectors actually indicate something about semantic meaning or
+relationship to other words. We use vectors to represent words because this is standard 
+practice in NLP and we need to do so to make our neural network work ($x$ being a vector
+instead of just a scalar gives the network more parameters with which to store information 
+and make better predictions). 
+
+\section{LSTM}
+Onto LSTMs, which stands for Long Short Term Memory. I don't think this the greatest name 
+(seems kind of misleading I guess) but I see where the name came from. In essence, LSTMs 
+solve the problem of vanishing and exploding gradients that are pervasive in long 
+RNNs. LSTM architecture is \emph{very} prevalent, so get used to seeing it and understand 
+it well. What is it? It's a little complicated at first but we'll take step by step. 
+~\\
+~\\
+First, in addition to having a hidden state at a given time step $h_t$, we have a cell state 
+$c_t$. The hidden state and cell state are the same dimension, in particular $N$ x $H$. Our 
+weight matrices $W_{xh}$ and $W_{hh}$ are different from previously though. Instead of shape 
+$H$ x $D$ for $W_{xh}$ and $H$ x $H$ for $W_{hh}$, we'll use $4H$ x $D$ for $W_{xh}$ 
+and $4H$ x $H$ for $W_{hh}$. We then use 
+\begin{equation*}
+    a = W_{xh}x_t + W_{hh} h_{t-1} + b
+\end{equation*}
+to compute the \emph{activation vector} $a$ of shape $N$ x $4H$. We then split up this activation 
+vector into four vectors: $a_i$, $a_f$, $a_o$, and $a_g$ where all four vectors are of shape 
+$N$ x $H$. Each of them are pushed through the following nonlinearities: 
+\begin{equation*}
+    i = \sigma(a_i) \; \; \; f = \sigma(a_f) \; \; \; o = \sigma(a_o) \; \; \; g = tanh(a_g)
+\end{equation*}
+where $\sigma(x)$ is the sigmoid function. We then use these to compute the next cell state
+\begin{equation*}
+    c_t = f \odot c_{t-1} + i \odot g 
+\end{equation*}
+and finally the next hidden state. 
+\begin{equation*}
+    h_t = o \odot tanh(c_t)
+\end{equation*}
 
 
 
