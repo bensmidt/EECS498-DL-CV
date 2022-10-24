@@ -59,7 +59,7 @@ See \href{https://www.google.com/search?q=recurrent+neural+network&sxsrf=ALiCzsa
 {this picture} for a visual. For vanilla neural networks (also known as "Elman RNNs") 
 we use the following function. 
 \begin{equation}
-    h_t = tanh(W_{hh}h_{t-1} + W_{xh}x_t + b)
+    h_t = tanh(h_{t-1}W_{hh} + x_tW_{xh} + b)
 \end{equation}
 where $h_t$ is the current state, $x_t$ is the input data, $W_{hh}$ is our (reused) 
 weight matrix for the hidden state input, and $W_{xh}$ is our (reused) weight 
@@ -322,15 +322,17 @@ RNNs. LSTM architecture is \emph{very} prevalent, so get used to seeing it and u
 it well. What is it? It's a little complicated at first but we'll take step by step. 
 ~\\
 ~\\
+\subsection{LSTM Forward}
 First, in addition to having a hidden state at a given time step $h_t$, we have a cell state 
-$c_t$. The hidden state and cell state are the same dimension, in particular $N$ x $H$. Our 
-weight matrices $W_{xh}$ and $W_{hh}$ are different from previously though. We'll use 
-$4H$ x $D$ for $W_{xh}$ 
-and $4H$ x $H$ for $W_{hh}$. We then use 
+$c_t$. The hidden state and cell state are the same dimension, in particular $N$ x $H$. Our $x_t$ 
+doesn't change, it's still of shape $N$ x $D$. Our weight matrices however, $W_{xh}$ and $W_{hh}$,
+are different from previously though. We'll use $D$ x $4H$ for $W_{xh}$ and $H$ x $4H$ for $W_{hh}$. 
+This leaves us with the following (very similar from before) equation. 
 \begin{equation*}
-    a = W_{xh}x_t + W_{hh} h_{t-1} + b
+    a = x_t W_{xh} + h_{t-1} W_{hh}  + b
 \end{equation*}
-to compute the \emph{activation vector} $a$ of shape $N$ x $4H$. We then split up this activation 
+to compute the \emph{activation vector} $a$ of shape $N$ x $4H$ (instead of $h_t$ as we did previously). 
+We then split up this activation 
 vector into four vectors: $a_i$, $a_f$, $a_o$, and $a_g$ where all four vectors are of shape 
 $N$ x $H$. Each of them are pushed through the following nonlinearities: 
 \begin{equation*}
@@ -344,6 +346,46 @@ and finally the next hidden state.
 \begin{equation*}
     h_t = o \odot tanh(c_t)
 \end{equation*}
+Okay, so that's how we compute a forward pass of the LSTM architecture. But why? Well, we 
+know it solves the vanishing and exploding gradient problem. But how? Another good question. 
+For that, let's talk about LSTM RNN backpropagation. The implementation of the LSTM 
+forward pass is pretty cut and dry. It's quite similar to our Elman RNN implementation 
+just with a few more gadgets and gizmos. 
+
+\subsection{LSTM Backward}
+Ah, the reason the LSTM architecture exists: gradient flow. Before we talk about how LSTMs 
+solve gradient flow, let's review why Vanilla RNNs struggle to have good gradient flow for 
+long sequences. The \href{https://web.eecs.umich.edu/~justincj/slides/eecs498/498_FA2019_lecture12.pdf}
+{EECS 498 Lecture Slides pg. 86} give a nice visual for this. 
+~\\
+~\\
+Essentially, during backpropagation we must propagate through each time step $h_t$. By calculus, 
+the gradient will be whatever weight matrix we multiply by $h_t$. In our case, we have 
+\begin{equation}
+    h_{t+1} = tanh(h_{t}W_{hh} + x_tW_{xh} + b)
+\end{equation}
+Thus, our gradient with respect to $h_t$ at any time step is $W_{hh}$ (with the 
+$tanh()$ derivative in their as well). This results in a continual multiplication 
+of matrix $W_{hh}$ on itself for every time step in the network to propagate all 
+the way to the beginning. As such, values greater than 1 quickly explode and those 
+less than 1 quickly vanish, leaving us with a serious gradient flow problem. 
+~\\
+~\\
+So, how do LSTMs fix this issue? Well if you go to \href{https://web.eecs.umich.edu/~justincj/slides/eecs498/498_FA2019_lecture12.pdf}
+{EECS 498 Lecture Slides pgs. 94 - 97}, you can visually see the difference in gradient 
+flow using LSTMs. We could go through the entire mechanics of backpropagation but you don't 
+need to do so to see that LSTMs have many different connections and pathways. The information 
+flow has a lot of options including a fair amount of additions (which play especially nice since
+they distribute the gradient, can't decrease, and don't explode). 
+~\\
+~\\
+This is essentially why LSTMs improve gradient flow: the allow more connections and don't 
+repeatedly rely on a given matrix $W_{hh}$. This is not dissimilar to Residual Networks and 
+their use of skip connections to improve gradient flow. In fact, befor ResNet was a thing, 
+an LSTM like architecture was proposed to solve the same gradient issues ResNet solved. So, 
+you can see they very much share the same intuition. 
+
+
 
 
 
