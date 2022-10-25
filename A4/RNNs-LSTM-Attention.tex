@@ -361,9 +361,9 @@ long sequences. The \href{https://web.eecs.umich.edu/~justincj/slides/eecs498/49
 ~\\
 Essentially, during backpropagation we must propagate through each time step $h_t$. By calculus, 
 the gradient will be whatever weight matrix we multiply by $h_t$. In our case, we have 
-\begin{equation}
+\begin{equation*}
     h_{t+1} = tanh(h_{t}W_{hh} + x_tW_{xh} + b)
-\end{equation}
+\end{equation*}
 Thus, our gradient with respect to $h_t$ at any time step is $W_{hh}$ (with the 
 $tanh()$ derivative in their as well). This results in a continual multiplication 
 of matrix $W_{hh}$ on itself for every time step in the network to propagate all 
@@ -385,7 +385,51 @@ their use of skip connections to improve gradient flow. In fact, befor ResNet wa
 an LSTM like architecture was proposed to solve the same gradient issues ResNet solved. So, 
 you can see they very much share the same intuition. 
 
+\subsection{Attention}
 
+\subsubsection{Intuition}
+Attention! Okay I'll try not to make any silly attention jokes. In all honesty, attention is 
+one of the most intruiguing, yet difficult (the generalization to tranformers especially) 
+concepts we've studied so far in the course. 
+~\\
+~\\
+Let's begin with some intuition. We have some data, a picture in our case, that we want 
+to use to predict something, captions in our case. Our output is a sequence and while 
+we could use all the data at each time step to make a prediction (for that time step), 
+it's reasonable to want to be able to "focus" on something. That is, it's reasonable to 
+give more attention (weight) to some parts of our data than others and letting this be 
+a learnable parameter of our network. Hopefully, our network can then focus on what is 
+most relevant in the data to predicting the next time step and make a better prediction 
+because of it. 
+
+\subsubsection{Basic Attention Layer}
+This is all fine and dandy, but how do we actually do this? Well, we compute 
+alignment scores over our input data (our picture) and normalize them using 
+softmax. See \href{https://web.eecs.umich.edu/~justincj/slides/eecs498/498_FA2019_lecture13.pdf}
+{EECS 498 Lecture Slides pg. 15} for a picture. The computation of our alignment scores
+are usually given by 
+\begin{equation*}
+    e = f_{att}(q, X)
+\end{equation*}
+where $q$ (shape $D_Q$) is our \emph{query vector}, often a time step of the encoder (which we don't have in 
+this network) or some data (which we do have in this network). In our case, $q$ is the image we're captioning. 
+$X$ is a matrix of input vectors (shape $N_x$ x $D_Q$). As a note, $D_Q$ is the same dimension as 
+what we've been referring to as $H$ throughout this assignment (often times $q$ is $h_{t-1}$ with shape 
+$H$ using our previous notation). 
+~\\
+~\\
+So, what's our $f_{att}$ function? Generally just a dot product. It's simple, computationally
+efficient and quite robust. In particular we have 
+\begin{equation*}
+    e = \frac{q X^T}{\sqrt{D_Q}} \; \; \; e_i = \frac{q \cdot X_i}{\sqrt{D_Q}}
+\end{equation*}
+where $e$ is a vector of length $N_x$. You may be wondering why we're dividing by $\sqrt{D_Q}$. 
+Remember that large values don't play well with softmax, so we normalize by $\sqrt{D_Q}$. Now, 
+our vector $e$ is a vector of alignment scores. We apply softmax to it so convert those 
+alignment scores to weights upon which use again on our vector $X$ to produce an output vector 
+$Y$ that we'll be able to use as an input into a given time step of our network. 
+
+\subsubsection{}
 
 
 
