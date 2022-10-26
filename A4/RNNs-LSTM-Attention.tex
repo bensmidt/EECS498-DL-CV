@@ -18,7 +18,7 @@
 
 \noindent Created: October 18th, 2022
 
-\noindent Last Updated: October 23rd, 2022
+\noindent Last Updated: October 26th, 2022
 \begin{center}
 \section*{Assignment 4: RNNs, LSTM, and Attention with Image Captioning}
 \end{center}
@@ -385,9 +385,9 @@ their use of skip connections to improve gradient flow. In fact, befor ResNet wa
 an LSTM like architecture was proposed to solve the same gradient issues ResNet solved. So, 
 you can see they very much share the same intuition. 
 
-\subsection{Attention}
+\section{Attention}
 
-\subsubsection{Intuition}
+\subsection{Intuition}
 Attention! Okay I'll try not to make any silly attention jokes. In all honesty, attention is 
 one of the most intruiguing, yet difficult (the generalization to tranformers especially) 
 concepts we've studied so far in the course. 
@@ -402,20 +402,25 @@ a learnable parameter of our network. Hopefully, our network can then focus on w
 most relevant in the data to predicting the next time step and make a better prediction 
 because of it. 
 
-\subsubsection{Basic Attention Layer}
+\subsection{Basic Attention Layer}
 This is all fine and dandy, but how do we actually do this? Well, we compute 
-alignment scores over our input data (our picture) and normalize them using 
+alignment scores $e$ over our input data (our picture) and normalize them using 
 softmax. See \href{https://web.eecs.umich.edu/~justincj/slides/eecs498/498_FA2019_lecture13.pdf}
 {EECS 498 Lecture Slides pg. 15} for a picture. The computation of our alignment scores
 are usually given by 
 \begin{equation*}
     e = f_{att}(q, X)
 \end{equation*}
-where $q$ (shape $D_Q$) is our \emph{query vector}, often a time step of the encoder (which we don't have in 
-this network) or some data (which we do have in this network). In our case, $q$ is the image we're captioning. 
-$X$ is a matrix of input vectors (shape $N_x$ x $D_Q$). As a note, $D_Q$ is the same dimension as 
-what we've been referring to as $H$ throughout this assignment (often times $q$ is $h_{t-1}$ with shape 
-$H$ using our previous notation). 
+where $q$ (shape $D_Q$) is our \emph{query vector}, generally the previous time step in our decoder
+$s_{t-1}$. (This is true in our case where $q$ is the previous hidden state $h_{t-1}$ in our word 
+captioning prediction RNN). I like to think of the query vector as the vector we're \emph{using} 
+to \emph{query} for what to give attention to over our input. 
+~\\
+~\\
+$X$ is our matrix of input vectors (shape $N_x$ x $D_Q$). In our case, the input is our 
+actual image that we're trying to caption. Our example will have $N_x = H$ (after applying 
+an affine transformation from 1280 to $H$) and 
+$D_Q = 16$. Often times the inputs are the time steps of your encoder. 
 ~\\
 ~\\
 So, what's our $f_{att}$ function? Generally just a dot product. It's simple, computationally
@@ -423,14 +428,126 @@ efficient and quite robust. In particular we have
 \begin{equation*}
     e = \frac{q X^T}{\sqrt{D_Q}} \; \; \; e_i = \frac{q \cdot X_i}{\sqrt{D_Q}}
 \end{equation*}
-where $e$ is a vector of length $N_x$. You may be wondering why we're dividing by $\sqrt{D_Q}$. 
-Remember that large values don't play well with softmax, so we normalize by $\sqrt{D_Q}$. Now, 
-our vector $e$ is a vector of alignment scores. We apply softmax to it so convert those 
-alignment scores to weights upon which use again on our vector $X$ to produce an output vector 
-$Y$ that we'll be able to use as an input into a given time step of our network. 
+where $e$ is a vector of length $N_x$ where each entry $e_i$ indicates the dot product similarity
+between our query vector $q$ and the vector $X_i$ in matrix $X$. You may be wondering why we're dividing by $\sqrt{D_Q}$. 
+Remember that large values don't play well with softmax, so we normalize by $\sqrt{D_Q}$. 
+~\\
+~\\
+Now, our vector $e$ is our vector of alignment scores. We apply softmax to convert those 
+alignment scores to weights $a$ (shape $N_x$) upon which we use on our matrix $X$ 
+(shape $N_x$ x $D_Q$) to produce an output vector $Y$. $Y$ is the weighted sum of the 
+vectors in $X$ using the weights in $a$. 
+\begin{equation*}
+    a = softmax(e)
+\end{equation*}
+\begin{equation*}
+    y_t = X^Ta 
+\end{equation*}
+Our vector $y_t$ (shape $D_Q$) is our context vector for a given 
+time step in our decoder. It uses attention to allow the network to focus on different 
+parts of the input. We can use the vector as an input into our function 
+\begin{equation*}
+    h_t = f_w (h_{t-1}, x_t, y_t)
+\end{equation*}
 
-\subsubsection{}
+\subsection{Generalizing Attention}
+Okay, so what I just described is attention but it was only for one query vector 
+at a time. This is a complicated topic though so I wanted to introduce it slowly. 
+Just to let you know, things are about to get hairy. 
+~\\
+~\\
+First, instead of a query vector $q$ (shape $D_Q$) we have a query matrix $Q$
+(shape $N_Q$ x $D_Q$). Each vector in $Q$ is a time step output in our RNN. 
+We keep $X$ as it was with shape $N_x$ x $D_x$. 
+~\\
+~\\
+We're going to add two new weight matrices now. The first we'll call a 
+\emph{key matrix} $W_K$ (shape $D_x$ x $D_Q$) and the second a \emph{value matrix} 
+$W_V$ (shape $D_x$ x $D_V$). The key matrix is used to transform our input 
+$X$ into a \emph{key vector} $K$ (shape $N_x$ x $D_Q$) and the value matrix is 
+used to tranform our input $X$ into a \emph{value vector} $V$ (shape $N_x$ x $D_V$). 
+\begin{equation*}
+    K = XW_K \; \; (N_x \; \text{x} \; D_Q) \; \; \; \; \; 
+    V= XW_V \; \; (N_x \; \text{x} \; D_V) 
+\end{equation*}
+Why are we doing this? Well, remember that we use the input $X$ twice: once when we 
+compare the previous time step in our decoder $s_{t-1}$ to each input and once when 
+we multiply our attention weights $a$ by each value to get a weighted sum of the 
+vectors in $X$ which we use as a context vector. Instead of using the same matrix, 
+we transform $X$ into two different matrices which adds more learnable parameters 
+and increases flexibility with the shapes of our data. 
+~\\
+~\\
+Next, instead of vector $e$ we have matrix $E$. 
+\begin{equation*}
+    E = QK^T \; \; (N_Q \; \text{x} \; N_x)\; \; \; \; \; E_{i, j} = \frac{Q_i \cdot K_j}{\sqrt{D_Q}}
+\end{equation*}
+Where $E$ is a matrix where a given row, $E_i$, is the alignment scores between query vector 
+$Q_i$ and all the input vectors in $X_j$. Because of this, we take the softmax over 
+dimension 1, to get our $A$ matrix. We use dimension 1 (rows), since each row is a vector 
+of aligment scores for a given query vector. 
+\begin{equation*}
+    A = softmax(E, dim=1) \; \; \; N_Q \; \text{x} \; N_x
+\end{equation*}
+Finally, we can use $A$ on our input to get our $Y$ matrix. But wait! Remember that 
+we wanted to separate $X$ has a keys and values using $K$ (key matrix) and 
+$V$ (value matrix). So we'll be using $V$, not $X$ with $A$ to compute $Y$. 
+\begin{equation*}
+    Y = AV \; \; \; N_Q \; \text{x} \; D_V
+\end{equation*}
+This shape makes sense. For each query vector $Q_i$ in $Q$, there is a context 
+vector in $Y$ where $Y_i$ is the context vector for $Q_i$. 
 
+\subsection{Implementation}
+This generalization is nice but let's look at how we actually implement this in code 
+for a real example.
+~\\
+~\\
+First, in our dot product attention function we take the dot product between our previous 
+time step $h_{t-1}$ and the feature activation of our image $A$. In this instance, 
+$h_{t-1}$ is a matrix of $N$ query vectors $q$, which is of shape $N$ x $H$. 
+Our feature activation $A$ is our input $X$ which is of shape $N$ x $H$ x 4 x 4. 
+We'll flatten the last two dimensions so $A$ has shape $N$ x $H$ x 16. 
+~\\
+~\\
+As you may notice, $A$ has an extra dimension in front. In particular, you might expect 
+$A$ to be of shape $H$ x 16. This is true for one example but we're training the model 
+on a batch size of $N$ so we must compute it for $N$ examples at the same time. That is, 
+We take the dot product between $h_{t-1}$ and $A$ along dimension 1. In code this amounts to 
+be 
+\begin{verbatim}
+    attn_weights = torch.sum(prev_h * A / math.sqrt(H), dim=1)
+\end{verbatim}
+We end up with our matrix \emph{attn-weights}, which is a matrix of $N$ alignment 
+score vectors $e$ as we talked about before. We then compute the softmax function 
+over dimension 1, since each row is the vector of alignment scores for a given 
+example. 
+~\\
+~\\
+Finally, take the weight sum of our input vectors for a given example in matrix $A$ 
+using the weights we just computed. In code this looks like 
+\begin{verbatim}
+    attn = torch.sum(A * attn_weights, dim=2)
+\end{verbatim}
+Where $A$ has shape $N$ x $H$ x 16 and \emph{attn-weights} has shape 
+$N$ x 1 x 16. This leaves us with our output vector $y_t$, which we named 
+\emph{attn}, of shape $N$ x $H$. 
+~\\
+~\\
+From here, we can pass off our $y_t$ vector to be used in our function 
+\begin{equation*}
+    h_t = f_w (h_{t-1}, x_t, y_t)
+\end{equation*}
+to compute the next time step. To do this we add another weight matrix 
+$W_{attn}$ of shape $H$ x $4H$. This is to be compatible with our recurrent neural 
+network and our formulation of the LSTM variant. 
+\begin{equation*}
+    h_t = tanh(h_{t-1}W_{hh} + x_tW_{xh} + y_tW_{attn} + b)
+\end{equation*}
+Everything else from here is the same as before. We simply inserted attention 
+into our network using the steps above. You can see, attention is a very nice 
+formulation, inserts well into our LSTM network, and has good intuition for 
+why it improves performance. 
 
 
 \end{document}
