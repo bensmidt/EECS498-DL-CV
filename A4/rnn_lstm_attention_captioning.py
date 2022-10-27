@@ -446,12 +446,18 @@ class CaptioningRNN(nn.Module):
         # Hint: In FeatureExtractor, set pooling=True to get the pooled CNN      #
         #       feature and pooling=False to get the CNN activation map.         #
         ##########################################################################
-        self.feat_extractor = FeatureExtractor(pooling=True, dtype=dtype, device=device)
+        if cell_type == 'attention': 
+          self.feat_extractor = FeatureExtractor(pooling=False, dtype=dtype, device=device) 
+          self.network = AttentionLSTM(input_size=wordvec_dim, hidden_size=hidden_dim, dtype=dtype, device=device)
+        
+        else: # not attention
+          self.feat_extractor = FeatureExtractor(pooling=True, dtype=dtype, device=device)
+          if self.cell_type == 'lstm':
+            self.network = LSTM(input_size=wordvec_dim, hidden_size=hidden_dim, dtype=dtype, device=device)
+          else: # self.cell_type == 'rnn': 
+            self.network = RNN(input_size=wordvec_dim, hidden_size=hidden_dim, dtype=dtype, device=device)
+        
         self.cnn_transform = nn.Linear(input_dim, hidden_dim).to(device=device, dtype=dtype)
-        if self.cell_type == 'lstm': 
-          self.network = LSTM(input_size=wordvec_dim, hidden_size=hidden_dim, dtype=dtype, device=device)
-        else: # self.cell_type == 'rnn': 
-          self.network = RNN(input_size=wordvec_dim, hidden_size=hidden_dim, dtype=dtype, device=device)
         self.word_embeddings = WordEmbedding(vocab_size, embed_size=wordvec_dim, dtype=dtype, device=device)
         self.temporal_scores = nn.Linear(hidden_dim, vocab_size).to(device=device, dtype=dtype)
         #############################################################################
@@ -505,7 +511,13 @@ class CaptioningRNN(nn.Module):
         # extract features from image 
         img_feats = self.feat_extractor.extract_mobilenet_feature(images)
         # use affine transformation to get initial hidden state h0
+        if self.cell_type == 'attention': 
+          img_feats = img_feats.transpose(1, 3)
+        
         h0 = self.cnn_transform(img_feats)
+
+        if self.cell_type == 'attention': 
+          h0 = h0.transpose(1, 3)
 
         # get word embeddings
         captions_in_vecs = self.word_embeddings.forward(captions_in)
@@ -582,11 +594,21 @@ class CaptioningRNN(nn.Module):
         ###########################################################################
         # extract features from image 
         img_feats = self.feat_extractor.extract_mobilenet_feature(images)
+        print("features:", img_feats.shape)
         # use affine transformation to get initial hidden state h0
+        if self.cell_type == 'attention': 
+          img_feats = img_feats.transpose(1, 3)
+        
         h0 = self.cnn_transform(img_feats)
 
-        h_prev = h0
-        c_prev = torch.zeros_like(h0) # for lstm architecture
+        if self.cell_type == 'attention': 
+          h0 = h0.transpose(1, 3)
+          h_prev = h0.mean(dim=(2,3))
+          c_prev = h0.mean(dim=(2,3))
+        else: # no attention
+          h_prev = h0
+          c_prev = torch.zeros_like(h0) # for lstm architecture
+          
         word_idcs_input = self._start
         
         if self.cell_type == 'rnn':
@@ -602,7 +624,7 @@ class CaptioningRNN(nn.Module):
             word_idcs_input = pred_word_idcs
             h_prev = h_next
 
-        else: # self.cell_type == 'lstm':
+        elif self.cell_type == 'lstm':
           for i in range(max_length): 
             # first input is broadcasted --> all samples begin with start token
             cur_x = self.word_embeddings.forward(word_idcs_input) 
@@ -615,6 +637,25 @@ class CaptioningRNN(nn.Module):
             word_idcs_input = pred_word_idcs
             h_prev = h_next
             c_prev = c_next
+        
+        else: # self.cell_type == 'attention': 
+          print("attn weights shape:", attn_weights_all.shape)
+          for i in range(max_length): 
+            print("iteration:", i)
+            # first input is broadcasted --> all samples begin with start token
+            cur_x = self.word_embeddings.forward(word_idcs_input) 
+            attn, attn_weights = dot_product_attention(h_prev, h0)
+            h_next, c_next = self.network.step_forward(cur_x, h_prev, c_prev, attn)
+            scores = self.temporal_scores(h_next)
+
+            __, pred_word_idcs = torch.max(scores, dim=1)
+            captions[:, i] = pred_word_idcs
+
+            word_idcs_input = pred_word_idcs
+            h_prev = h_next
+            c_prev = c_next
+            attn_weights_all[:, i, :, :] = attn_weights
+          
 
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -657,7 +698,13 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b, attn=None, Wattn=None):
     # You may want to use torch.sigmoid() for the sigmoid function.             #
     #############################################################################
     N, H = prev_c.shape
-    a = x @ Wx + prev_h @ Wh + b
+    if attn != None: 
+      test = x @ Wx
+      test = prev_h @ Wh
+      test = attn @ Wattn
+      a = x @ Wx + prev_h @ Wh + attn @ Wattn + b
+    else: # no attention
+      a = x @ Wx + prev_h @ Wh + b
 
     i = torch.sigmoid(a[:, :H])
     f = torch.sigmoid(a[:, H:2*H])
@@ -799,8 +846,17 @@ def dot_product_attention(prev_h, A):
     # You will use this function for `attention_forward` and `sample_caption`   #
     # HINT: Make sure you reshape attn_weights back to (N, 4, 4)!               #
     #############################################################################
-    # Replace "pass" statement with your code
-    pass
+    A = A.reshape(N, H, -1)         # A: N x H x 16
+    prev_h = prev_h.reshape(N, H, 1) # prev_h: N x H x 1
+
+    attn_weights = torch.sum( prev_h * A / math.sqrt(H), dim=1)
+    softmax = torch.nn.Softmax(dim=1)
+    attn_weights = softmax(attn_weights) # attn_weights: N x 16
+    
+    attn_weights = attn_weights.reshape(N, 1, -1)  # attn_weights: N x 1 x 16
+    attn = torch.sum(A * attn_weights, dim=2)  # attn_weights: N x H
+
+    attn_weights = attn_weights.reshape(N, 4, 4)
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
@@ -848,8 +904,22 @@ def attention_forward(x, A, Wx, Wh, Wattn, b):
     # You should use the lstm_step_forward function and dot_product_attention   #
     # function that you just defined.                                           #
     #############################################################################
-    # Replace "pass" statement with your code
-    pass
+    N, T, D = x.shape
+    N, H = h0.shape
+    x_t = x.transpose(0, 1)
+    h_trps = torch.zeros(T, N, H).to(x)
+
+    prev_h = h0
+    prev_c = c0
+    for i in range(T): 
+      attn, attn_weights = dot_product_attention(prev_h, A)
+      cur_h, cur_c = lstm_step_forward(x_t[i], prev_h, prev_c, Wx, Wh, b, 
+                                       attn=attn, Wattn=Wattn)
+      h_trps[i] = cur_h
+      prev_h = cur_h
+      prev_c = cur_c
+    
+    h = h_trps.transpose(0, 1)
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
@@ -914,4 +984,3 @@ class AttentionLSTM(nn.Module):
     next_h, next_c = lstm_step_forward(x, prev_h, prev_c, self.Wx, self.Wh,
                                        self.b, attn=attn, Wattn=self.Wattn)
     return next_h, next_c
-
