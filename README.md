@@ -61,6 +61,7 @@ All coding assignments are programmed using Google Colab and PyTorch.
   2. Image Captioning with Recurrent Neural Networks
       - [rnn_lstm_attention_captioning.ipynb](https://github.com/bensmidt/EECS498-DL-Computer-Vision/blob/main/A4/rnn_lstm_attention_captioning.ipynb)
       - [rnn_lstm_attention_captioning.py](https://github.com/bensmidt/EECS498-DL-Computer-Vision/blob/main/A4/rnn_lstm_attention_captioning.py)
+      - [RNNs, LSTMs, Attention Work/Explained](https://github.com/bensmidt/EECS498-DL-Computer-Vision/blob/main/A4/RNNs-LSTM-Attention.pdf)
   3. Network Visualization
   4. Style Transfer
 
