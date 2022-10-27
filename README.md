@@ -59,6 +59,8 @@ All coding assignments are programmed using Google Colab and PyTorch.
   1. PyTorch AutoGrad: 
       - [PyTorch Notes](https://github.com/bensmidt/EECS498-DL-Computer-Vision/blob/main/A4/PyTorch.md)
   2. Image Captioning with Recurrent Neural Networks
+      - [rnn_lstm_attention_captioning.ipynb](https://github.com/bensmidt/EECS498-DL-Computer-Vision/blob/main/A4/rnn_lstm_attention_captioning.ipynb)
+      - [rnn_lstm_attention_captioning.py](https://github.com/bensmidt/EECS498-DL-Computer-Vision/blob/main/A4/rnn_lstm_attention_captioning.py)
   3. Network Visualization
   4. Style Transfer
 
